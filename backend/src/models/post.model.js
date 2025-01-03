@@ -3,13 +3,14 @@ import mongoose from "mongoose";
 const user = { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   comment = { type: mongoose.Schema.Types.ObjectId, ref: "Comment" };
 
-const postSchema = mongoose.Schema(
+const postSchema = new mongoose.Schema(
   {
     publisher: { ...user, required: true },
-    title: String,
-    text: String,
-    img: String,
+    title: { type: String, maxlength: 300 },
+    body: String,
+    images: [String],
     likes: [user],
+    dislikes: [user],
     comments: [comment],
     shares: Number,
     updated: { type: Boolean, default: false },

@@ -27,26 +27,14 @@ const userSchema = new mongoose.Schema(
       validate: {
         validator: function (value) {
           const parts = value.split(" ");
-          return parts.length <= 5 && parts.every((part) => part.length <= 20);
+          return parts.length <= 5 && parts.every(part => part.length <= 20);
         },
         message: "Only 5 words of max length 20 are allowed",
       },
     },
-    profilePic: {
-      type: String,
-      default: "",
-    },
-    password: {
-      type: String,
-      required: true,
-      // minlength: [6, "Min password length is 6"],    // password is hashed -> different size
-      // maxlength: [30, "Max password length is 30"],
-    },
-    bio: {
-      type: String,
-      default: "",
-      maxlength: [255, "Bio can not exceed 255 characters"],
-    },
+    profilePic: { type: String, default: "" },
+    password: { type: String, required: true },
+    bio: { type: String, default: "", maxlength: [255, "Bio can not exceed 255 characters"] },
     followerRequests: [fReq],
     followingRequests: [fReq],
     followers: [user],

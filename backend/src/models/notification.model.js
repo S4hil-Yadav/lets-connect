@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const notificationSchema = mongoose.Schema(
+const notificationSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,7 +32,7 @@ const notificationSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Comment",
     },
-    read: { type: Boolean, default: false },
+    read: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

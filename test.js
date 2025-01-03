@@ -1,3 +1,10 @@
-const arr = { d: 3 };
+function a() {
+  return 1;
+}
 
-console.log(d);
+function b(a) {
+  return a(4);
+}
+
+console.log(b((r) => r + 2));
+console.log();

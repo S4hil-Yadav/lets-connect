@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
 // import User from "./user.model";
 
-const commentSchema = mongoose.Schema(
+const commentSchema = new mongoose.Schema(
   {
     commentor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    text: String,
-    // img: String,
+    text: { type: String, required: true },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    // img: String,
     // replies: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,

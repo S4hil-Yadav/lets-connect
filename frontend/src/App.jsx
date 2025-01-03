@@ -1,86 +1,81 @@
 import SideNavbar from "./components/SideNavbar";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import SignupPage from "./pages/SignupPage";
-import { useDispatch, useSelector } from "react-redux";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
+import CreatePostPage from "./pages/CreatePostPage";
 import {
-  excludeRecommendationbarRoutes,
+  excludeSidebarRoutes,
   excludeSideNavbarRoutes,
 } from "./utils/routeUtil";
 import SearchPage from "./pages/SearchPage";
 import NotificationPage from "./pages/NotificationPage";
-import { useEffect, useRef } from "react";
-import { fetchUser } from "./redux/user/userSlice";
+import Sidebar from "./components/Sidebar";
+import SettingsPage from "./pages/SettingsPage";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 export default function App() {
+  const { isLoading, status } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: () =>
+      axios.get("/api/v1/users/get-auth-user").then((res) => res.data),
+    retry: (count, error) => count < 3 && error.response?.status === 500,
+  });
+
   const location = useLocation();
 
-  // set friendrequests seen to true
-  // <div data-theme="light" className="flex flex-col md:flex-row">
-  //   <div
-  //     className={`flex shrink flex-col md:order-last md:w-[calc(100%-12.25rem)] ${excludeSideNavbarRoutes.includes(location.pathname) && "md:flex-1"}`}
-  //   >
-  //     {/* <div className="hidden h-6 w-full bg-yellow-200" /> */}
-  //     <PageRoutes />
-  //   </div>
-  //   <SideNavbar />
-  // </div>;
+  const includeSideNavbar = !excludeSideNavbarRoutes.includes(
+    location.pathname.split("/").filter(Boolean)[0] || "",
+  );
+  const includeSidebar = !excludeSidebarRoutes.includes(
+    location.pathname.split("/").filter(Boolean)[0] || "",
+  );
+
+  if (isLoading) return null;
 
   return (
-    <div data-theme="light" className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <div
-        className={`flex flex-1 flex-col bg-orange-200 md:order-last md:w-[calc(100%-12.25rem)] ${excludeSideNavbarRoutes.includes(location.pathname) && "md:w-full"}`}
+        className={`flex w-full flex-col bg-orange-200 md:order-last ${includeSideNavbar && "md:w-[calc(100%-12.24rem)]"}`}
       >
-        {/* <div className="h-6 w-full bg-yellow-200" /> */}
-        <div className="flex flex-1 bg-white">
+        <div className="hidden h-10 w-full bg-yellow-200" />
+        <div className="flex w-full bg-gray-50">
           <div
-            className={`flex min-h-screen w-full bg-red-200 lg:w-[calc(100%-20rem)] ${excludeRecommendationbarRoutes.includes(location.pathname) && "lg:w-full"}`}
+            className={`flex min-h-screen w-full ${includeSidebar && "lg:w-[calc(100%-20rem)]"}`}
           >
-            <PageRoutes />
+            <PageRoutes isAuthUser={status === "success"} />
           </div>
-          {!excludeRecommendationbarRoutes.includes(location.pathname) && (
-            <div className="hidden flex-1 border-l-2 border-gray-300 bg-gray-200 bg-opacity-70 lg:flex" />
-          )}
+          {includeSidebar && <Sidebar />}
         </div>
       </div>
-      <SideNavbar />
+      {includeSideNavbar ? <SideNavbar /> : null}
     </div>
   );
 }
-function PageRoutes() {
-  const { authUser } = useSelector((state) => state.user);
-  const authUserRef = useRef(authUser);
-  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const fetchUserData = () => dispatch(fetchUser());
-    console.log("user refresh");
-
-    authUserRef.current?._id && fetchUserData();
-    const fetchUserIntervalId = setInterval(fetchUserData, 10000 * 60 * 1000);
-    return () => clearInterval(fetchUserIntervalId);
-  }, [dispatch]);
-
+function PageRoutes({ isAuthUser }) {
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={authUser ? "/home" : "/login"} />}
+        element={<Navigate to={isAuthUser ? "/home" : "/login"} />}
       />
       <Route path="/home" element={<HomePage />} />
       <Route
         path="/signup"
-        element={authUser ? <Navigate to="/home" /> : <SignupPage />}
+        element={isAuthUser ? <Navigate to="/home" /> : <SignupPage />}
       />
       <Route
         path="/login"
-        element={authUser ? <Navigate to="/home" /> : <LoginPage />}
+        element={isAuthUser ? <Navigate to="/home" /> : <LoginPage />}
       />
-      <Route path="/profile/" element={<ProfilePage />} />
       <Route path="/search" element={<SearchPage />} />
+      <Route path="/create" element={<CreatePostPage />} />
       <Route path="/notifications" element={<NotificationPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/profile/:id" element={<ProfilePage />} />
       <Route
         path="/:test"
         element={

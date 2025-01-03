@@ -1,23 +1,21 @@
 import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Input, SubmitButton } from "../components/Input";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { fetchUser, setUser } from "../redux/user/userSlice";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 export default function SignupPage() {
-  const dispatch = useDispatch(),
-    navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(false),
-    [userFields, setUserFields] = useState({
-      fullname: "Sahil Yadav",
-      username: "S4hil",
-      email: "sahil@gmail.com",
-      password: "123456",
-    });
+  const [userFields, setUserFields] = useState({
+    fullname: "Sahil Yadav",
+    username: "S4hil",
+    email: "sahil@gmail.com",
+    password: "123456",
+  });
 
   const inputs = useRef(null);
 
@@ -25,9 +23,18 @@ export default function SignupPage() {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
+  const { mutate: signUpMutation, isPending } = useMutation({
+    mutationFn: (userFields) => axios.post("/api/v1/auth/signup", userFields),
+    onSuccess: () => {
+      toast.success("Signup successful");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+    onError: (err) =>
+      toast.error(err.response.data.message || "Something went wrong"),
+  });
+
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
 
     try {
       if (
@@ -50,31 +57,22 @@ export default function SignupPage() {
       if (userFields.password.length > 30)
         throw new Error("Maximum password length is 30");
 
-      const res = await fetch("/api/v1/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userFields),
-      });
+      if (
+        userFields.fullname.split(" ").length > 5 ||
+        !userFields.fullname.split(" ").every((part) => part.length <= 20)
+      )
+        throw new Error(
+          "Only 5 words of max length 20 are allowed in full name",
+        );
 
-      const data = await res.json();
-
-      if (data.success === false) throw new Error(data.message);
-
-      if (res.ok) {
-        dispatch(setUser(data));
-        dispatch(fetchUser());
-        toast.success("Signup successful");
-        navigate("/");
-      }
+      signUpMutation(userFields);
     } catch (error) {
       toast.error(error.message);
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center bg-white bg-[url('../assets/bg-violet.jpg')] md:bg-gray-300 md:py-10">
+    <div className="flex min-h-screen flex-1 items-center justify-center bg-white bg-[url('../assets/bg-violet.jpg')] md:bg-gray-300 md:py-10">
       <form
         className="flex w-screen flex-col justify-between border-[5px] border-none bg-white px-5 pt-10 md:max-w-xl md:border-slate-800 md:px-20 md:shadow-2xl"
         onSubmit={handleSubmit}
@@ -107,8 +105,8 @@ export default function SignupPage() {
             onChange={handleChange}
           />
         </div>
-        <div className="my-8 flex items-center overflow-clip rounded-2xl bg-gray-200">
-          <SubmitButton type="signup" loading={loading} />
+        <div className="my-12 flex items-center overflow-clip rounded-2xl">
+          <SubmitButton type="signup" loading={isPending} />
         </div>
         <div className="flex flex-col">
           <div className="flex items-center justify-center">
@@ -123,12 +121,12 @@ export default function SignupPage() {
             <FaGithub className="size-8 cursor-pointer transition-opacity duration-150 ease-in hover:opacity-80" />
           </div>
         </div>
-        <span className="py-8 text-sm font-semibold text-gray-600">
+        <span className="my-3 py-5 text-sm font-semibold text-gray-600">
           Already have an account?&nbsp;&nbsp;
           <Link
             to="/login"
             className="text-blue-800 hover:text-blue-500"
-            disabled={loading}
+            disabled={isPending}
           >
             Login
           </Link>

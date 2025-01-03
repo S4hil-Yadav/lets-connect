@@ -6,42 +6,39 @@ import cloudinary from "../lib/cloudinary.js";
 
 export async function signup(req, res, next) {
   try {
-    const { email, username, fullname, password } = req.body;
-    if (!email || !username || !fullname || !password)
+    let { email, username, fullname, password } = req.body;
+    (email = email.trim().toLowerCase()),
+      (username = username.trim()),
+      (fullname = fullname.trim()),
+      (password = password.trim());
+
+    if (!email.trim() || !username.trim() || !fullname.trim() || !password.trim())
       return next(errorHandler(422, "All fields are required"));
 
-    if (!/.+@.+\..+/.test(email))
-      return next(errorHandler(422, "Invalid email address"));
+    if (!/.+@.+\..+/.test(email)) return next(errorHandler(422, "Invalid email address"));
+    if (username.length > 20) return next(errorHandler(422, "Maximum username length is 20"));
+    if (password.length < 6) return next(errorHandler(422, "Minimun password length is 6"));
+    if (password.length > 30) return next(errorHandler(422, "Maximum password length is 30"));
 
-    if (username.length > 20)
-      return next(errorHandler(422, "Maximum username length is 20"));
+    if (fullname.split(" ").length > 5 || !fullname.split(" ").every(part => part.length <= 20))
+      return next(errorHandler(422, "Only 5 words of max length 20 are allowed in full name"));
 
-    if (password.length < 6)
-      return next(errorHandler(422, "Minimun password length is 6"));
-
-    if (password.length > 30)
-      return next(errorHandler(422, "Maximum password length is 30"));
-
-    if (await User.findOne({ email }))
-      return next(errorHandler(409, "Email already exists"));
-
-    if (await User.findOne({ username }))
-      return next(errorHandler(409, "Username already exists"));
+    if (await User.findOne({ email })) return next(errorHandler(409, "Email already exists"));
+    if (await User.findOne({ username })) return next(errorHandler(409, "Username already exists"));
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password.trim(), salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await User.create({
-      email: email.toLowerCase(),
+      email,
       username,
       fullname,
       password: hashedPassword,
-    }).catch((_err) => next(errorHandler(422, "Invalid user data")));
+    }).catch(_err => next(errorHandler(422, "Invalid user data")));
 
     generateToken(newUser._id, res);
 
-    delete newUser._doc.password;
-    return res.status(201).json(newUser._doc);
+    return res.status(204).json({ message: "Signup successful" });
   } catch (error) {
     console.error("Error in signup controler :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -50,54 +47,21 @@ export async function signup(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    (email = email.trim().toLowerCase()), (password = password.trim());
 
-    if (!email || !password)
-      return next(errorHandler(400, "All fields are required"));
+    if (!email || !password) return next(errorHandler(400, "All fields are required"));
 
     const user = await User.findOne({
       email: email.toLowerCase().trim(),
-    }).populate([
-      "followers",
-      "following",
-      { path: "followers", select: "username fullname profilePic" },
-      { path: "following", select: "username fullname profilePic" },
-      {
-        path: "followerRequests",
-        options: { sort: { createdAt: -1 } },
-        select: "sender",
-        populate: {
-          path: "sender",
-          select: "username fullname profilePic",
-        },
-      },
-      {
-        path: "followingRequests",
-        select: "receiver",
-        populate: {
-          path: "receiver",
-          select: "username fullname profilePic",
-        },
-      },
-      {
-        path: "notifications",
-        options: { sort: { createdAt: -1 } },
-        populate: [
-          { path: "sender", select: "fullname username profilePic" },
-          { path: "post", select: "title img" },
-          { path: "comment", select: "text" },
-        ],
-      },
-    ]);
+    }).select("password");
 
     if (!user) return next(errorHandler(400, "User not found (check email)"));
-    if (!(await bcrypt.compare(password.trim(), user.password)))
-      return next(errorHandler(400, "Password mismatch"));
+    if (!(await bcrypt.compare(password.trim(), user.password))) return next(errorHandler(400, "Password mismatch"));
 
     generateToken(user._id, res);
 
-    delete user._doc.password;
-    return res.status(200).json(user._doc);
+    return res.status(204).json({ message: "Login successful" });
   } catch (error) {
     console.error("Error in login controller :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -106,9 +70,9 @@ export async function login(req, res, next) {
 
 export function logout(req, res, next) {
   try {
-    if (!req.cookies.jwt) return next(errorHandler(401, "Already logged out"));
+    // if (!req.cookies.jwt) return next(errorHandler(401, "Already logged out"));
     res.clearCookie("jwt");
-    return res.status(200).json({ message: "Logged out successfully" });
+    return res.status(204).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Error in logout controller :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -129,7 +93,7 @@ export async function updateUser(req, res, next) {
 
     if (!updateUser) return next(errorHandler(400, "Invalid profile picture"));
 
-    return res.status(200).json({ message: "Profile picture updated" });
+    return res.status(204).json({ message: "Profile picture updated" });
   } catch (error) {
     console.error("Error in updateUser controller : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -138,7 +102,7 @@ export async function updateUser(req, res, next) {
 
 export async function checkAuth(req, res, next) {
   try {
-    return res.status(204).json(req.user);
+    return res.status(200).json(await User.findById(req.user._id).select("-password"));
   } catch (error) {
     console.error("Error in checkAuth controler : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));

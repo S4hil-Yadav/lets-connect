@@ -34,17 +34,17 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUser.pending, (state, action) => {
-        state.loading[action.meta?.arg] = true;
-      })
+      // .addCase(fetchUser.pending, (state, action) => {
+      //   state.loading[action.meta?.arg?.load] = true;
+      // })
       .addCase(fetchUser.fulfilled, (state, action) => {
         state.authUser = action.payload;
-        delete state.loading[action.meta?.arg];
-      })
-      .addCase(fetchUser.rejected, (state, action) => {
-        state.error = action.error.message;
-        delete state.loading[action.meta?.arg];
+        // delete state.loading[action.meta?.arg?.load];
       });
+    // .addCase(fetchUser.rejected, (state, action) => {
+    //   state.error = action.error.message;
+    //   delete state.loading[action.meta?.arg?.load];
+    // });
   },
 });
 

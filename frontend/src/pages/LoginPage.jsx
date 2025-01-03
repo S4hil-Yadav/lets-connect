@@ -1,29 +1,36 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Input, SubmitButton } from "../components/Input";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/user/userSlice";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 export default function LoginPage() {
-  const dispatch = useDispatch(),
-    navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(false),
-    [userFields, setUserFields] = useState({
-      email: "sahil@gmail.com",
-      password: "123456",
-    });
+  const [userFields, setUserFields] = useState({
+    email: "sahil@gmail.com",
+    password: "123456",
+  });
 
   function handleChange(e) {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
-  async function handleSubmit(e) {
+  const { mutate: loginMutation, isPending } = useMutation({
+    mutationFn: (userFields) => axios.post("/api/v1/auth/login", userFields),
+    onSuccess: () => {
+      toast.success("Login successful");
+      queryClient.invalidateQueries(["authUser"]);
+    },
+    onError: (err) =>
+      toast.error(err.response.data.message || "Something went wrong"),
+  });
+
+  function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
 
     try {
       if (!userFields.email || !userFields.password)
@@ -32,30 +39,14 @@ export default function LoginPage() {
       if (!/.+@.+\..+/.test(userFields.email))
         throw new Error("Invalid email address");
 
-      const res = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userFields),
-      });
-
-      const data = await res.json();
-
-      if (data.success === false) throw new Error(data.message);
-
-      if (res.ok) {
-        dispatch(setUser(data));
-        toast.success("Login successful");
-        navigate("/");
-      }
+      loginMutation(userFields);
     } catch (error) {
       toast.error(error.message);
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center bg-[url('../assets/bg-violet.jpg')] md:bg-gray-300 md:py-10">
+    <div className="flex min-h-screen flex-1 items-center justify-center bg-[url('../assets/bg-violet.jpg')] md:bg-gray-300 md:py-10">
       <form
         className="flex w-screen flex-col justify-between border-[5px] border-none bg-white px-5 pt-10 md:max-w-xl md:border-slate-800 md:px-20 md:shadow-2xl"
         onSubmit={handleSubmit}
@@ -77,8 +68,8 @@ export default function LoginPage() {
             onChange={handleChange}
           />
         </div>
-        <div className="my-8 flex items-center overflow-clip rounded-2xl bg-gray-200">
-          <SubmitButton type="login" loading={loading} />
+        <div className="my-12 flex items-center overflow-clip rounded-2xl">
+          <SubmitButton type="login" loading={isPending} />
         </div>
         <div className="flex flex-col">
           <div className="flex items-center justify-center">
@@ -93,12 +84,12 @@ export default function LoginPage() {
             <FaGithub className="size-8 cursor-pointer transition-opacity duration-150 ease-in hover:opacity-80" />
           </div>
         </div>
-        <span className="mb-3 py-5 text-sm font-semibold text-gray-600">
+        <span className="my-3 py-5 text-sm font-semibold text-gray-600">
           Don&apos;t have an account?&nbsp;&nbsp;
           <Link
             to="/signup"
             className="text-blue-800 hover:text-blue-500"
-            disabled={loading}
+            disabled={isPending}
           >
             Signup
           </Link>

@@ -1,40 +1,28 @@
-import { useDispatch } from "react-redux";
-import { clearUser } from "../redux/user/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Post from "../components/Post";
 import toast from "react-hot-toast";
 
 export default function HomePage() {
-  const dispatch = useDispatch(),
-    navigate = useNavigate();
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    try {
-      const res = await fetch("/api/v1/auth/logout", { method: "POST" });
-
-      const data = await res.json();
-
-      if (data.success === false) throw new Error(data.message);
-
-      if (res.ok) {
-        dispatch(clearUser());
-        toast.success("Logout successful");
-        navigate("/login");
+  const [posts, setPosts] = useState([]);
+  useEffect(() => {
+    getPosts();
+    async function getPosts() {
+      try {
+        const res = await fetch("/api/v1/posts/get-all-posts", {
+          method: "GET",
+        });
+        res.ok && setPosts(await res.json());
+      } catch (error) {
+        toast.error(error.message);
       }
-    } catch (error) {
-      toast.error(error.message);
     }
-  }
+  }, []);
 
   return (
-    <div className="min-h-screen flex-1 bg-white">
-      <button
-        onClick={handleSubmit}
-        className="m-5 w-fit rounded-lg bg-violet-400 p-3 text-white shadow-md"
-      >
-        Logout
-      </button>
+    <div className="flex min-h-screen w-full flex-col items-center gap-5 bg-gray-50 px-0 py-10 md:px-10">
+      {/* {posts.map((post, i) => (
+        <Post key={i} post={post} />
+      ))} */}
     </div>
   );
 }

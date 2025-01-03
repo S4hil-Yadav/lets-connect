@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { BsAlphabetUppercase } from "react-icons/bs";
 import { FaRegUser } from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
@@ -7,10 +7,10 @@ import { MdOutlineVisibilityOff } from "react-icons/md";
 import { CgSpinnerTwo } from "react-icons/cg";
 
 export function Input({ value, onChange, field, autoFocus }) {
-  const inputRef = useRef(null);
+  // const inputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <div className="flex w-auto flex-col items-start border-b-2 border-gray-400 shadow-sm hover:border-gray-600 has-[>div>input:focus]:border-blue-600">
+    <div className="flex w-auto flex-col items-start border-b-2 border-gray-400 shadow-sm has-[>div>input:focus]:border-blue-600 hover:border-gray-600">
       <label htmlFor={field.replace(/ /g, "")}>
         <span className="text-sm font-bold capitalize text-gray-400">
           {field}
@@ -25,7 +25,7 @@ export function Input({ value, onChange, field, autoFocus }) {
           value={value}
           placeholder={"Enter your " + field}
           id={field.replace(/ /g, "")}
-          ref={inputRef}
+          // ref={inputRef}
           onChange={onChange}
           autoFocus={autoFocus}
           required

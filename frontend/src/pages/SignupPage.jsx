@@ -23,8 +23,12 @@ export default function SignupPage() {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
-  const { mutate: signUpMutation, isPending } = useMutation({
-    mutationFn: (userFields) => axios.post("/api/v1/auth/signup", userFields),
+  const {
+    mutate: signUpMutation,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: () => axios.post("/api/v1/auth/signup", userFields),
     onSuccess: () => {
       toast.success("Signup successful");
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
@@ -65,7 +69,7 @@ export default function SignupPage() {
           "Only 5 words of max length 20 are allowed in full name",
         );
 
-      signUpMutation(userFields);
+      signUpMutation();
     } catch (error) {
       toast.error(error.message);
     }
@@ -106,7 +110,11 @@ export default function SignupPage() {
           />
         </div>
         <div className="my-12 flex items-center overflow-clip rounded-2xl">
-          <SubmitButton type="signup" loading={isPending} />
+          <SubmitButton
+            type="signup"
+            processing={isPending}
+            redirecting={isSuccess}
+          />
         </div>
         <div className="flex flex-col">
           <div className="flex items-center justify-center">

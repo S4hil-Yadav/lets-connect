@@ -5,25 +5,19 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreatePostPage from "./pages/CreatePostPage";
-import {
-  excludeSidebarRoutes,
-  excludeSideNavbarRoutes,
-} from "./utils/routeUtil";
+import { excludeSidebarRoutes, excludeSideNavbarRoutes } from "./lib/routes";
 import SearchPage from "./pages/SearchPage";
 import NotificationPage from "./pages/NotificationPage";
 import Sidebar from "./components/Sidebar";
 import SettingsPage from "./pages/SettingsPage";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useGetAuthQuery } from "./lib/queries/auth.queries";
+import PostModal from "./components/postComponents/PostModal";
+import EditProfile from "./components/profilePageComponents/EditProfile";
+import { useQueryClient } from "@tanstack/react-query";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function App() {
-  const { isLoading, status } = useQuery({
-    queryKey: ["authUser"],
-    queryFn: () =>
-      axios.get("/api/v1/users/get-auth-user").then((res) => res.data),
-    retry: (count, error) => count < 3 && error.response?.status === 500,
-  });
-
+  const { isLoading, isSuccess } = useGetAuthQuery();
   const location = useLocation();
 
   const includeSideNavbar = !excludeSideNavbarRoutes.includes(
@@ -33,19 +27,22 @@ export default function App() {
     location.pathname.split("/").filter(Boolean)[0] || "",
   );
 
-  if (isLoading) return null;
+  if (isLoading)
+    return (
+      <ImSpinner2 className="mt-5 size-7 w-full animate-spin text-violet-700" />
+    );
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <div
-        className={`flex w-full flex-col bg-orange-200 md:order-last ${includeSideNavbar && "md:w-[calc(100%-12.24rem)]"}`}
+        className={`flex w-full flex-col md:order-last ${includeSideNavbar && "md:w-[calc(100%-12.24rem)]"}`}
       >
-        <div className="hidden h-10 w-full bg-yellow-200" />
-        <div className="flex w-full bg-gray-50">
+        <div className="hidden h-10 w-full" />
+        <div className="flex w-full">
           <div
-            className={`flex min-h-screen w-full ${includeSidebar && "lg:w-[calc(100%-20rem)]"}`}
+            className={`flex min-h-screen w-full flex-col ${includeSidebar && "lg:w-[calc(100%-20rem)]"}`}
           >
-            <PageRoutes isAuthUser={status === "success"} />
+            <PageRoutes isAuthUser={isSuccess} />
           </div>
           {includeSidebar && <Sidebar />}
         </div>
@@ -56,34 +53,57 @@ export default function App() {
 }
 
 function PageRoutes({ isAuthUser }) {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
+  const location = useLocation(),
+    pathRoot = location.pathname.split("/").filter(Boolean)[0];
+  location.pathname.split("/").filter(Boolean)[0];
+
+  const bgLocation =
+    !location.state?.backgroundLocation && pathRoot === "post"
+      ? { pathname: "/home" }
+      : !location.state?.backgroundLocation && pathRoot === "edit-profile"
+        ? { pathname: "/profile/" + authUser?._id }
+        : location.state?.backgroundLocation;
+
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Navigate to={isAuthUser ? "/home" : "/login"} />}
-      />
-      <Route path="/home" element={<HomePage />} />
-      <Route
-        path="/signup"
-        element={isAuthUser ? <Navigate to="/home" /> : <SignupPage />}
-      />
-      <Route
-        path="/login"
-        element={isAuthUser ? <Navigate to="/home" /> : <LoginPage />}
-      />
-      <Route path="/search" element={<SearchPage />} />
-      <Route path="/create" element={<CreatePostPage />} />
-      <Route path="/notifications" element={<NotificationPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/profile/:id" element={<ProfilePage />} />
-      <Route
-        path="/:test"
-        element={
-          <div className="min-h-screen text-center font-black">
-            Page not found
-          </div>
-        }
-      />
-    </Routes>
+    <>
+      <Routes location={bgLocation || location}>
+        <Route
+          path="/"
+          element={<Navigate to={isAuthUser ? "/home" : "/login"} />}
+        />
+        <Route path="/home" element={<HomePage />} />
+        <Route
+          path="/signup"
+          element={isAuthUser ? <Navigate to="/home" /> : <SignupPage />}
+        />
+        <Route
+          path="/login"
+          element={isAuthUser ? <Navigate to="/home" /> : <LoginPage />}
+        />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/create" element={<CreatePostPage />} />
+        <Route path="/notifications" element={<NotificationPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route
+          path="*"
+          element={
+            <div className="min-h-screen text-center font-black">
+              Page not found
+            </div>
+          }
+        />
+      </Routes>
+      {bgLocation && (
+        <Routes>
+          <Route path="/post/:postId" element={<PostModal />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="*" element />
+        </Routes>
+      )}
+    </>
   );
 }

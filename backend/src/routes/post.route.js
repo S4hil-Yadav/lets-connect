@@ -5,8 +5,11 @@ import {
   dislikePost,
   getAllPosts,
   getComments,
-  getLikesDislikes,
+  getDislikedPosts,
+  getLikedPosts,
+  getPost,
   likePost,
+  SearchPosts,
   submitComment,
   undislikePost,
   unlikePost,
@@ -16,14 +19,17 @@ import { protectRoute } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 router.put("/create-post", protectRoute, createPost);
-router.delete("/delete-post/:id", protectRoute, deletePost);
+router.delete("/:postId/delete-post", protectRoute, deletePost);
+router.get("/search-posts", SearchPosts);
 router.get("/get-all-posts", getAllPosts);
-router.patch("/like-post/:id", protectRoute, likePost);
-router.delete("/unlike-post/:id", protectRoute, unlikePost);
-router.patch("/dislike-post/:id", protectRoute, dislikePost);
-router.delete("/undislike-post/:id", protectRoute, undislikePost);
-router.get("/get-likes-dislikes/:id", getLikesDislikes);
+router.get("/:postId/get-post", getPost);
+router.patch("/:postId/like-post", protectRoute, likePost);
+router.delete("/:postId/unlike-post", protectRoute, unlikePost);
+router.patch("/:postId/dislike-post", protectRoute, dislikePost);
+router.delete("/:postId/undislike-post", protectRoute, undislikePost);
 router.post("/:postId/submit-comment", protectRoute, submitComment);
-router.get("/:postId/get-comments", protectRoute, getComments);
+router.get("/:postId/get-comments", getComments);
+router.get("/get-liked-posts/:userId", getLikedPosts);
+router.get("/get-disliked-posts", protectRoute, getDislikedPosts);
 
 export default router;

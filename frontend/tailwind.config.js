@@ -60,7 +60,4 @@ export default {
     },
   },
   plugins: [scrollbarPlugin, animate],
-  daisyui: {
-    themes: ["light", "dark", "cupcake"],
-  },
 };

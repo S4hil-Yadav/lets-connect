@@ -10,7 +10,7 @@ export default function SettingsPage() {
   const { mutate: logout } = useMutation({
     mutationFn: () => axios.post("/api/v1/auth/logout"),
     onSuccess: async () => {
-      await queryClient.invalidateQueries(["authUser"]);
+      await queryClient.invalidateQueries(["auth-user"]);
       navigate("/login");
       toast.success("Logged out");
     },

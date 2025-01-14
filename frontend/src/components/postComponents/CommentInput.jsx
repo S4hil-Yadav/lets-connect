@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useSubmitCommentMutation } from "@/lib/mutations/post.mutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { AiOutlineSend } from "react-icons/ai";
+import AuthAlertDialog from "../AuthAlertDialog";
 
 export default function CommentInput({ postId }) {
-  const [comment, setComment] = useState(""),
-    [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
+  const [comment, setComment] = useState("");
+
+  const { mutateAsync: commentSubmit, isPending } = useSubmitCommentMutation();
+
+  const inputRef = useRef();
 
   function handleCommentChange(e) {
     setComment(e.target.value);
@@ -15,37 +24,39 @@ export default function CommentInput({ postId }) {
   async function handleCommentSubmit(e) {
     e.preventDefault();
     try {
-      setLoading(true);
-      const res = await fetch(`/api/v1/posts/${postId}/submit-comment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      toast.success("Comment submitted");
+      await commentSubmit({ comment, postId });
       setComment("");
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setLoading(false);
+      inputRef.current.style.height = "3rem";
+    } catch (err) {
+      toast.error(err.response?.data.message || "Something went wrong");
     }
   }
 
   return (
     <form
       onSubmit={handleCommentSubmit}
-      className="flex w-full items-end gap-3 rounded-lg bg-gray-200 p-3"
+      className="mb-7 flex w-full items-end gap-3 rounded-lg bg-gray-200 p-3"
     >
       <textarea
+        ref={inputRef}
         onChange={handleCommentChange}
         placeholder="Write a comment..."
         value={comment}
-        className="w-full resize-none bg-gray-200"
+        className="max-h-40 w-full resize-none bg-gray-200 scrollbar-thin"
         required
       />
-      <button disabled={loading} className="disabled:opacity-60">
-        <AiOutlineSend size={20} />
+      <button
+        type={!authUser ? "button" : "submit"}
+        disabled={isPending}
+        className="group disabled:cursor-progress disabled:opacity-60"
+      >
+        {!authUser ? (
+          <AuthAlertDialog>
+            <AiOutlineSend size={20} />
+          </AuthAlertDialog>
+        ) : (
+          <AiOutlineSend size={20} className="group-disabled:cursor-progress" />
+        )}
       </button>
     </form>
   );

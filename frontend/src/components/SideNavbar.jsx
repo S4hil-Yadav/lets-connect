@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { HiOutlineHome } from "react-icons/hi";
-import { IoSearch } from "react-icons/io5";
-import { IoCreateOutline } from "react-icons/io5";
+import { IoSearch, IoCreateOutline } from "react-icons/io5";
 import {
   MdNotificationsNone,
   MdOutlineNotificationsActive,

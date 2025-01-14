@@ -17,15 +17,6 @@ const followRequestSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
-    seen: {
-      type: Boolean,
-      default: true,
-    },
-    notification: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Notification",
-      required: true,
-    },
   },
   { timestamps: true }
 );

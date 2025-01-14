@@ -1,10 +1,7 @@
-function a() {
-  return 1;
-}
+const o = { a: 1, b: { x: 2, y: 3 } };
 
-function b(a) {
-  return a(4);
-}
+const {
+  b: { x },
+} = o;
 
-console.log(b((r) => r + 2));
-console.log();
+console.log(!null);

@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 export async function getNotifications(req, res, next) {
   try {
-    const { notifications, followerRequests } = await User.findById(req.user._id)
+    const { notifications } = await User.findById(req.user._id)
       .populate({
         path: "notifications",
         options: { sort: { createdAt: -1 } },
@@ -13,9 +13,9 @@ export async function getNotifications(req, res, next) {
           { path: "comment", select: "text" },
         ],
       })
-      .select("notifications followerRequests");
+      .select("notifications");
 
-    return res.status(200).json({ notifications, followerRequestCount: followerRequests.length });
+    return res.status(200).json(notifications);
   } catch (error) {
     console.error(error.message);
     return next(errorHandler(500, "Internal Server Error"));

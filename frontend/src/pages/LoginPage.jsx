@@ -19,8 +19,12 @@ export default function LoginPage() {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
-  const { mutate: loginMutation, isPending } = useMutation({
-    mutationFn: (userFields) => axios.post("/api/v1/auth/login", userFields),
+  const {
+    mutate: loginMutation,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: () => axios.post("/api/v1/auth/login", userFields),
     onSuccess: () => {
       toast.success("Login successful");
       queryClient.invalidateQueries(["authUser"]);
@@ -31,7 +35,6 @@ export default function LoginPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-
     try {
       if (!userFields.email || !userFields.password)
         throw new Error("All fields are necessary");
@@ -39,7 +42,7 @@ export default function LoginPage() {
       if (!/.+@.+\..+/.test(userFields.email))
         throw new Error("Invalid email address");
 
-      loginMutation(userFields);
+      loginMutation();
     } catch (error) {
       toast.error(error.message);
     }
@@ -69,7 +72,11 @@ export default function LoginPage() {
           />
         </div>
         <div className="my-12 flex items-center overflow-clip rounded-2xl">
-          <SubmitButton type="login" loading={isPending} />
+          <SubmitButton
+            type="login"
+            processing={isPending}
+            redirecting={isSuccess}
+          />
         </div>
         <div className="flex flex-col">
           <div className="flex items-center justify-center">

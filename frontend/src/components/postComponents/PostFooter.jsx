@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { useSelector } from "react-redux";
 import {
   MdOutlineThumbUp,
   MdOutlineThumbDown,
@@ -9,143 +6,127 @@ import {
 } from "react-icons/md";
 import { AiOutlineShareAlt, AiOutlineComment } from "react-icons/ai";
 import {
-  dislikePost,
-  likePost,
-  undislikePost,
-  unlikePost,
-} from "@/utils/reqUtils";
+  useDislikePostMutation,
+  useLikePostMutation,
+  useUndislikePostMutation,
+  useUnlikePostMutation,
+} from "@/lib/mutations/post.mutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useLocation } from "react-router-dom";
 
-export default function PostFooter({ postId, setCommentsOpen }) {
-  const { _id: authUserId } = useSelector((state) => state.user?.authUser);
-  const [likes, setLikes] = useState();
-  const [dislikes, setDislikes] = useState();
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    getLikesDislikes();
-    async function getLikesDislikes() {
-      try {
-        const res = await fetch("/api/v1/posts/get-likes-dislikes/" + postId, {
-          method: "GET",
-        });
-        const data = await res.json();
-
-        if (!res.ok || data.success === false) throw new Error(data.message);
-        setLikes(data.likes), setDislikes(data.dislikes);
-        setLiked(data.likes?.some((likerId) => likerId === authUserId));
-        setDisliked(
-          data.dislikes?.some((dislikerId) => dislikerId === authUserId),
-        );
-      } catch (error) {
-        toast.error(error.message);
-      }
-    }
-  }, [authUserId, postId]);
-
-  const [liked, setLiked] = useState(false),
-    [disliked, setDisliked] = useState(false);
-
-  async function handleLike() {
-    like: try {
-      if (disliked && !liked && (await handleDislike()) === "error") break like;
-      setLoading(true);
-      const data = liked ? await unlikePost(postId) : await likePost(postId);
-      setLikes(data?.likes), setLiked((prev) => !prev);
-    } catch (error) {
-      toast.error(error.message);
-      return "error";
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function handleDislike() {
-    dislike: try {
-      if (liked && !disliked && (await handleLike()) === "error") break dislike;
-      setLoading(true);
-      const data = await (disliked
-        ? undislikePost(postId)
-        : dislikePost(postId));
-      setDislikes(data?.dislikes), setDisliked((prev) => !prev);
-    } catch (error) {
-      toast.error(error.message);
-      return "error";
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function PostFooter({ post, setCommentsOpen }) {
   return (
     <div className="flex w-full justify-between py-6">
       <div className="flex bg-gray-100">
-        <LikeButton
-          liked={liked}
-          handleLike={handleLike}
-          loading={loading}
-          likesLen={likes?.length}
-        />
-        <DislikeButton
-          disliked={disliked}
-          handleDislike={handleDislike}
-          loading={loading}
-          dislikesLen={dislikes?.length}
-        />
+        <LikeButton post={post} />
+        <DislikeButton post={post} />
       </div>
-      <button
-        onClick={() => setCommentsOpen((prev) => !prev)}
-        className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1"
-      >
-        <AiOutlineComment size={20} />
-      </button>
-      <button className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1">
-        <AiOutlineShareAlt size={20} />
-      </button>
+      {setCommentsOpen ? (
+        <CommentButton setCommentsOpen={setCommentsOpen} post={post} />
+      ) : (
+        <button className="flex items-center justify-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1">
+          <AiOutlineComment size={20} />
+          <span className="text-xs font-medium text-gray-600">
+            {post.comments.length}
+          </span>
+        </button>
+      )}
+      <ShareButton />
     </div>
   );
 }
 
-function DislikeButton({ disliked, handleDislike, loading, dislikesLen }) {
+function LikeButton({ post }) {
+  const queryClient = useQueryClient();
+  const authUser = queryClient.getQueryData(["authUser"]);
+  const { mutate: handleLike, isPending: isPendingLike } =
+    useLikePostMutation();
+  const { mutate: handleUnlike, isPending: isPendingUnlike } =
+    useUnlikePostMutation();
+
+  const liked = post.likers.includes(authUser?._id);
+
   return (
     <button
-      onClick={handleDislike}
-      disabled={loading}
-      className="group flex basis-1/2 items-center gap-1 rounded-r-lg border border-gray-300 px-2 py-1 disabled:cursor-default"
+      onClick={() => (liked ? handleUnlike(post._id) : handleLike(post._id))}
+      disabled={isPendingLike || isPendingUnlike}
+      className="group flex basis-1/2 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 px-2 py-1 disabled:cursor-progress"
     >
-      {disliked ? (
-        <MdThumbDown
+      {liked ? (
+        <MdThumbUp
           size={20}
-          className="text-violet-700 group-disabled:cursor-default"
+          className="text-violet-700 group-disabled:cursor-progress"
         />
       ) : (
-        <MdOutlineThumbDown
+        <MdOutlineThumbUp
           size={20}
-          className="group-disabled:cursor-default"
+          className="group-disabled:cursor-progress"
         />
       )}
-      <span className="text-xs font-medium text-gray-600">
-        {dislikesLen || 0}
+      <span className="text-xs font-medium text-gray-600 group-disabled:cursor-progress">
+        {post.likers.length}
       </span>
     </button>
   );
 }
 
-function LikeButton({ liked, handleLike, loading, likesLen }) {
+function DislikeButton({ post }) {
+  const queryClient = useQueryClient();
+  const authUser = queryClient.getQueryData(["authUser"]);
+  const { mutate: handleDislike, isPending: isPendingDislike } =
+    useDislikePostMutation();
+  const { mutate: handleUndislike, isPending: isPendingUndislike } =
+    useUndislikePostMutation();
+
+  const disliked = post.dislikers.includes(authUser?._id);
+
   return (
     <button
-      onClick={handleLike}
-      disabled={loading}
-      className="group flex basis-1/2 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 px-2 py-1 disabled:cursor-default"
+      onClick={() =>
+        disliked ? handleUndislike(post._id) : handleDislike(post._id)
+      }
+      disabled={isPendingDislike || isPendingUndislike}
+      className="group flex basis-1/2 items-center gap-1 rounded-r-lg border border-gray-300 px-2 py-1 disabled:cursor-progress"
     >
-      {liked ? (
-        <MdThumbUp
+      {disliked ? (
+        <MdThumbDown
           size={20}
-          className="text-violet-700 group-disabled:cursor-default"
+          className="text-violet-700 group-disabled:cursor-progress"
         />
       ) : (
-        <MdOutlineThumbUp size={20} className="group-disabled:cursor-default" />
+        <MdOutlineThumbDown
+          size={20}
+          className="group-disabled:cursor-progress"
+        />
       )}
-      <span className="text-xs font-medium text-gray-600 group-disabled:cursor-default">
-        {likesLen || 0}
+      <span className="text-xs font-medium text-gray-600">
+        {post.dislikers.length || 0}
       </span>
+    </button>
+  );
+}
+
+function CommentButton({ post }) {
+  const location = useLocation();
+
+  return (
+    <Link
+      to={"/post/" + post._id}
+      state={{ backgroundLocation: location }}
+      className="flex items-center justify-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1"
+    >
+      <AiOutlineComment size={20} />
+      <span className="text-xs font-medium text-gray-600">
+        {post.comments.length || 0}
+      </span>
+    </Link>
+  );
+}
+
+function ShareButton() {
+  return (
+    <button className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1">
+      <AiOutlineShareAlt size={20} />
     </button>
   );
 }

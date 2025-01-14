@@ -1,2 +1,0 @@
-export const excludeSideNavbarRoutes = ["", "login", "signup"];
-export const excludeSidebarRoutes = ["", "login", "signup", "profile"];

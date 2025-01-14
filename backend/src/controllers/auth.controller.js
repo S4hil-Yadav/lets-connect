@@ -6,11 +6,10 @@ import cloudinary from "../lib/cloudinary.js";
 
 export async function signup(req, res, next) {
   try {
-    let { email, username, fullname, password } = req.body;
-    (email = email.trim().toLowerCase()),
-      (username = username.trim()),
-      (fullname = fullname.trim()),
-      (password = password.trim());
+    const email = req.body.email.trim().toLowerCase(),
+      username = req.body.username.trim(),
+      fullname = req.body.fullname.trim(),
+      password = req.body.password.trim();
 
     if (!email.trim() || !username.trim() || !fullname.trim() || !password.trim())
       return next(errorHandler(422, "All fields are required"));
@@ -38,7 +37,7 @@ export async function signup(req, res, next) {
 
     generateToken(newUser._id, res);
 
-    return res.status(204).json({ message: "Signup successful" });
+    return res.status(204).end();
   } catch (error) {
     console.error("Error in signup controler :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -47,8 +46,8 @@ export async function signup(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    let { email, password } = req.body;
-    (email = email.trim().toLowerCase()), (password = password.trim());
+    const email = req.body.email.trim().toLowerCase(),
+      password = req.body.password.trim();
 
     if (!email || !password) return next(errorHandler(400, "All fields are required"));
 
@@ -61,45 +60,72 @@ export async function login(req, res, next) {
 
     generateToken(user._id, res);
 
-    return res.status(204).json({ message: "Login successful" });
+    return res.status(204).end();
   } catch (error) {
     console.error("Error in login controller :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
 
-export function logout(req, res, next) {
+export function logout(_req, res, next) {
   try {
     // if (!req.cookies.jwt) return next(errorHandler(401, "Already logged out"));
     res.clearCookie("jwt");
-    return res.status(204).json({ message: "Logged out successfully" });
+    return res.status(204).end();
   } catch (error) {
     console.error("Error in logout controller :", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
 
+export async function getAuthUser(req, res, next) {
+  try {
+    const authUser = await User.findById(req.user._id).select("username email fullname profilePic");
+
+    return res.status(200).json(authUser);
+  } catch (error) {
+    console.error("Error in getAuthUser controler : ", error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
 export async function updateUser(req, res, next) {
   try {
-    const { profilePic } = req.body;
+    const email = req.body.email.trim().toLowerCase(),
+      username = req.body.username.trim(),
+      fullname = req.body.fullname.trim(),
+      newProfilePic = req.body.profilePic;
 
-    if (!profilePic) next(errorHandler(400, "Profile pic is required"));
+    const { profilePic: prevProfilePic } = await User.findById(req.user._id).select("profilePic");
 
-    const uploadRes = await cloudinary.uploader.upload(profilePic);
+    if (!username || !fullname || !email.trim()) next(errorHandler(400, "All fields are required"));
+
+    const uploadRes = newProfilePic && newProfilePic !== prevProfilePic ? await cloudinary.uploader.upload(newProfilePic) : null;
 
     await User.findByIdAndUpdate(req.user._id, {
-      profilePic: uploadRes.secure_url,
+      username,
+      fullname,
+      email,
+      profilePic: !newProfilePic ? "" : newProfilePic === prevProfilePic ? prevProfilePic : uploadRes.secure_url,
     });
 
-    if (!updateUser) return next(errorHandler(400, "Invalid profile picture"));
+    if (prevProfilePic && prevProfilePic !== newProfilePic) {
+      const publicId = prevProfilePic.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
 
-    return res.status(204).json({ message: "Profile picture updated" });
+    return res.status(204).end();
   } catch (error) {
     console.error("Error in updateUser controller : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
 
+// export async function deleteUser(req, res, next) {
+//   const user = await User.findById(req.user._id);
+// }
+
+// Development
 export async function checkAuth(req, res, next) {
   try {
     return res.status(200).json(await User.findById(req.user._id).select("-password"));
@@ -108,8 +134,3 @@ export async function checkAuth(req, res, next) {
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
-
-// export async function deleteUser(req, res, next) {
-//   const user = await User.findById(req.user._id);
-
-// }

@@ -1,13 +1,14 @@
 import errorHandler from "../lib/error.js";
 import Comment from "../models/comment.model.js";
 
-export async function getComments(req, res, next) {
+export async function getCommentsByIds(req, res, next) {
   try {
-    const { commentIds } = req.body;
-    comments = await Comment.find({ _id: { $in: commentIds } }).populate({
-      path: "commentor",
-      select: "username fullname profilePic",
-    });
+    const { commentIds } = req.body,
+      comments = await Comment.find({ _id: { $in: commentIds } }).populate({
+        path: "commentor",
+        select: "username fullname profilePic",
+      });
+
     return res.status(200).json(comments);
   } catch (error) {
     console.error(error.message);

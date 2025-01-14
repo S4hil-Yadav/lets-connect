@@ -38,10 +38,12 @@ const userSchema = new mongoose.Schema(
     followerRequests: [fReq],
     followingRequests: [fReq],
     followers: [user],
-    following: [user],
+    followings: [user],
     notifications: [notif],
     posts: [post],
     likedPosts: [post],
+    dislikedPosts: [post],
+    savedPosts: [post],
     comments: [comment],
   },
   { timestamps: true }

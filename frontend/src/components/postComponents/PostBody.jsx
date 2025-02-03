@@ -29,14 +29,14 @@ export default function PostBody({ post, isModal }) {
       <Carousel className="flex w-full justify-center">
         <CarouselContent>
           {post.images.map((image, i) => (
-            <CarouselItem key={i} className="max-w-xs">
+            <CarouselItem key={i}>
               <img
                 src={image}
                 onClick={() => {
                   setImgIdx(i);
                   imgDialogRef.current.showModal();
                 }}
-                className={`select-none border-2 border-gray-200 ${!isModal && "max-h-40"}`}
+                className="mx-auto h-40 select-none border-2 border-gray-200"
               />
             </CarouselItem>
           ))}

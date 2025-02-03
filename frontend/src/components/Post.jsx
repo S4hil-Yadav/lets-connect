@@ -21,7 +21,9 @@ export default function Post({ postId, isModal = false }) {
   // </span>
 
   return (
-    <li className="flex w-full flex-col border-t-2 border-gray-300 px-3 pt-4 first-of-type:border-t-0">
+    <li
+      className={`flex w-full flex-col border-t-2 border-gray-300 px-3 pt-4 first-of-type:border-t-0 ${!isModal && "md:max-w-lg"}`}
+    >
       <PostHeader post={post} publisher={post.publisher} />
       <PostBody post={post} isModal={isModal} />
       <PostFooter post={post} />

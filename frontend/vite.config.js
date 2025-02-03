@@ -9,12 +9,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   build: { outDir: "dist" },
-  // server: {
-  //   proxy: {
-  //     "/api": {
-  //       target: "http://localhost:2000",
-  //       secure: false,
-  //     },
-  //   },
-  // },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:2000",
+        secure: false,
+      },
+    },
+  },
 });

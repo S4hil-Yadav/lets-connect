@@ -9,7 +9,7 @@ import TextWithExpand from "../TextWithExpand";
 import { useRef, useState } from "react";
 import BigCarousel from "./BigCarousel";
 
-export default function PostBody({ post }) {
+export default function PostBody({ post, isModal }) {
   const imgDialogRef = useRef(null);
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -25,17 +25,18 @@ export default function PostBody({ post }) {
         imgIdx={imgIdx}
         setImgIdx={setImgIdx}
       />
+
       <Carousel className="flex w-full justify-center">
         <CarouselContent>
           {post.images.map((image, i) => (
-            <CarouselItem key={i} className="max-h-xs max-w-xs">
+            <CarouselItem key={i} className="max-w-xs">
               <img
                 src={image}
                 onClick={() => {
                   setImgIdx(i);
                   imgDialogRef.current.showModal();
                 }}
-                className="select-none border-2 border-gray-200 object-contain"
+                className={`select-none border-2 border-gray-200 ${!isModal && "max-h-40"}`}
               />
             </CarouselItem>
           ))}

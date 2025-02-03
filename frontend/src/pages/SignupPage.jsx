@@ -74,7 +74,6 @@ export default function SignupPage() {
             field="full name"
             value={userFields.fullname}
             onChange={handleChange}
-            autoFocus={true}
           />
           <Input
             field="username"

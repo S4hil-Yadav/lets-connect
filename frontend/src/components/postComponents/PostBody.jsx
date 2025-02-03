@@ -9,7 +9,7 @@ import TextWithExpand from "../TextWithExpand";
 import { useRef, useState } from "react";
 import BigCarousel from "./BigCarousel";
 
-export default function PostBody({ post, isModal }) {
+export default function PostBody({ post }) {
   const imgDialogRef = useRef(null);
   const [imgIdx, setImgIdx] = useState(0);
 

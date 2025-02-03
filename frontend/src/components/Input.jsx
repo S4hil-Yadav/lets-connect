@@ -67,7 +67,6 @@ export function SearchInput({ onSearchChange }) {
             className="flex w-full bg-gray-100 p-2.5 font-semibold text-slate-600 placeholder:font-exo placeholder:font-normal placeholder:tracking-normal focus:outline-none"
             placeholder="Search"
             onChange={onSearchChange}
-            autoFocus
             required
           />
           <label className="mr-3 cursor-pointer text-gray-500">

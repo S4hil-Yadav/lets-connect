@@ -54,9 +54,11 @@ export default function CommentInput({ postId }) {
           <AiOutlineSend size={20} className="group-disabled:cursor-progress" />
         </button>
       ) : (
-        <AuthAlert>
-          <AiOutlineSend size={20} />
-        </AuthAlert>
+        <div>
+          <AuthAlert>
+            <AiOutlineSend size={20} />
+          </AuthAlert>
+        </div>
       )}
     </form>
   );

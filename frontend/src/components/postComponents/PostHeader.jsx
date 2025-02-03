@@ -22,6 +22,7 @@ import {
 } from "react-icons/md";
 import { useQueryClient } from "@tanstack/react-query";
 import DeletePostAlert from "../alerts/DeletePostAlert";
+import AuthAlert from "../alerts/AuthAlert";
 
 export default function PostHeader({ post, publisher }) {
   const queryClient = useQueryClient(),
@@ -69,18 +70,33 @@ export default function PostHeader({ post, publisher }) {
           <BsThreeDotsVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="left" className="min-w-40">
-          <DropdownMenuItem
-            disabled={isLoading || isError || isPendingSave || isPendingUnsave}
-            onClick={() =>
-              postSaved ? handleUnsavePost(post._id) : handleSavePost(post._id)
-            }
-          >
-            {postSaved ? (
-              <MdBookmark className="text-gray-600" />
+          <DropdownMenuItem asChild onClick={(e) => e.preventDefault()}>
+            {!authUser ? (
+              <span className="flex items-center gap-2">
+                <MdBookmarkBorder className="text-gray-600" />
+                <AuthAlert>
+                  <h1>Save</h1>
+                </AuthAlert>
+              </span>
             ) : (
-              <MdBookmarkBorder />
+              <button
+                disabled={
+                  isLoading || isError || isPendingSave || isPendingUnsave
+                }
+                onClick={() =>
+                  postSaved
+                    ? handleUnsavePost(post._id)
+                    : handleSavePost(post._id)
+                }
+              >
+                {postSaved ? (
+                  <MdBookmark className="text-gray-600" />
+                ) : (
+                  <MdBookmarkBorder />
+                )}
+                {postSaved ? "Unsave Post" : "Save Post"}
+              </button>
             )}
-            {postSaved ? "Unsave Post" : "Save Post"}
           </DropdownMenuItem>
           {publisher._id === authUser?._id ? (
             <>

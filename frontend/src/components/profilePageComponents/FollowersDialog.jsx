@@ -55,7 +55,7 @@ export default function FollowersDialog({ userId }) {
         <ul className="flex w-full flex-col gap-2">
           {followers.map((follower) => (
             <FDialogContent key={follower._id} user={follower}>
-              {!authUser?._id ? (
+              {!authUser ? (
                 <AuthAlert>
                   <h1 className="flex h-5 w-fit min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-4 font-medium text-white shadow-md hover:bg-violet-300 disabled:cursor-progress md:px-2 md:text-base">
                     Follow

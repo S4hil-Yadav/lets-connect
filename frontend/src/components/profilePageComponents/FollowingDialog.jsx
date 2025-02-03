@@ -5,7 +5,7 @@ import {
 } from "@/lib/queries/user.queries";
 import FDialog, { FDialogContent, HandleFollowButton } from "./FDialog";
 import { useQueryClient } from "@tanstack/react-query";
-import AuthAlertDialog from "../alerts/AuthAlert";
+import AuthAlert from "../alerts/AuthAlert";
 
 export default function FollowingDialog({ userId }) {
   const queryClient = useQueryClient();
@@ -53,8 +53,12 @@ export default function FollowingDialog({ userId }) {
         <ul className="flex w-full flex-col">
           {followings.map((following) => (
             <FDialogContent key={following._id} user={following}>
-              {!authUser?._id ? (
-                <AuthAlertDialog />
+              {!authUser ? (
+                <AuthAlert>
+                  <h1 className="flex h-5 w-fit min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-4 font-medium text-white shadow-md hover:bg-violet-300 disabled:cursor-progress md:px-2 md:text-base">
+                    Follow
+                  </h1>
+                </AuthAlert>
               ) : (
                 <HandleFollowButton
                   receiver={following}

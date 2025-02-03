@@ -16,7 +16,9 @@ import { Link } from "react-router-dom";
 export default function AuthAlert({ children }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger>{children}</AlertDialogTrigger>
+      <AlertDialogTrigger className="w-full text-left">
+        {children}
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle asChild>

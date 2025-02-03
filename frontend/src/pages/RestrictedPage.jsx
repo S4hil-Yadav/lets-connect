@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function RestrictedPage() {
   return (
     <div className="mt-10 flex flex-col items-center gap-8">
-      <span className="text-xl font-semibold">
+      <span className="text-center text-xl font-semibold">
         You must login or signup to use this feature
       </span>
       <div className="flex gap-5 text-xl">

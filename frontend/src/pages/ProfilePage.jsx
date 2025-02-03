@@ -40,7 +40,7 @@ export default function ProfilePage() {
     bioRef = useRef(null);
 
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center lg:flex-row">
+    <div className="flex min-h-screen w-full flex-col lg:flex-row">
       <div className="relative top-0 z-50 flex max-h-screen w-full flex-col gap-5 overflow-y-auto border-b-2 bg-gray-100 pb-3 scrollbar-thin lg:sticky lg:order-last lg:max-w-[30%] lg:border-b-0 lg:border-l-2">
         <div className="absolute right-3 top-3">
           <DropdownMenu>

@@ -2,6 +2,7 @@ import { ImSpinner2 } from "react-icons/im";
 import Post from "./Post";
 import { MdErrorOutline } from "react-icons/md";
 import { useLocation } from "react-router-dom";
+import { LuSearchX } from "react-icons/lu";
 
 export default function Posts({ isLoading, isError, posts, type }) {
   const location = useLocation();
@@ -14,16 +15,17 @@ export default function Posts({ isLoading, isError, posts, type }) {
     );
   if (isError)
     return (
-      <span className="mt-10 flex min-h-screen w-full justify-center gap-3 text-lg font-medium">
+      <span className="mt-10 flex w-full justify-center gap-3 text-lg font-medium">
         Couldn&apos;t load posts
         <MdErrorOutline size={25} />
       </span>
     );
   if (!posts.length)
     return (
-      <div className="flex min-h-screen w-full flex-col items-center gap-5 px-0 py-10 md:px-10">
+      <span className="mt-10 flex w-full justify-center gap-3 text-lg font-medium">
         No posts found
-      </div>
+        <LuSearchX size={25} />
+      </span>
     );
 
   return (

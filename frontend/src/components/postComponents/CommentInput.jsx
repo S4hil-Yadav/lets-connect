@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { AiOutlineSend } from "react-icons/ai";
-import AuthAlertDialog from "../AuthAlertDialog";
+import AuthAlert from "../alerts/AuthAlert";
 
 export default function CommentInput({ postId }) {
   const queryClient = useQueryClient(),
@@ -45,19 +45,19 @@ export default function CommentInput({ postId }) {
         className="max-h-40 w-full resize-none bg-gray-200 scrollbar-thin"
         required
       />
-      <button
-        type={!authUser ? "button" : "submit"}
-        disabled={isPending}
-        className="group disabled:cursor-progress disabled:opacity-60"
-      >
-        {!authUser ? (
-          <AuthAlertDialog>
-            <AiOutlineSend size={20} />
-          </AuthAlertDialog>
-        ) : (
+      {authUser ? (
+        <button
+          type={!authUser ? "button" : "submit"}
+          disabled={isPending}
+          className="group disabled:cursor-progress disabled:opacity-60"
+        >
           <AiOutlineSend size={20} className="group-disabled:cursor-progress" />
-        )}
-      </button>
+        </button>
+      ) : (
+        <AuthAlert>
+          <AiOutlineSend size={20} />
+        </AuthAlert>
+      )}
     </form>
   );
 }

@@ -1,22 +1,22 @@
-import Post from "@/components/Post";
+import Posts from "@/components/Posts";
 import { useGetPostsQuery } from "@/lib/queries/post.queries";
-import { ImSpinner2 } from "react-icons/im";
+import { RiSettings4Line } from "react-icons/ri";
+import { Link } from "react-router-dom";
 
 export default function HomePage() {
   const { data: posts, isLoading, isError } = useGetPostsQuery();
-
-  if (isLoading)
-    return (
-      <ImSpinner2 className="mt-5 size-7 w-full animate-spin text-violet-700" />
-    );
-  if (isError) return "error in loading posts";
-  if (!posts.length) return "No posts found";
-
   return (
-    <ul className="flex min-h-screen w-full flex-col items-center gap-5 py-5 md:px-10">
-      {posts.map((post) => (
-        <Post key={post._id} postId={post._id} />
-      ))}
-    </ul>
+    <>
+      <div className="flex h-12 items-center justify-around border-b-2 border-gray-600 bg-gray-100 md:hidden">
+        <h1 className="bg-gradient-to-r from-pink-600 via-purple-600 to-violet-600 bg-clip-text text-xl font-bold text-transparent">
+          BuzzVib
+        </h1>
+        <Link to="/settings">
+          <RiSettings4Line size={25} className="text-gray-500" />
+        </Link>
+      </div>
+
+      <Posts isLoading={isLoading} isError={isError} posts={posts} heading="" />
+    </>
   );
 }

@@ -1,20 +1,30 @@
-import { useState } from "react";
-import CommentSection from "./postComponents/CommentSection";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import PostContent from "./postComponents/PostContent";
+import { useGetPostQuery } from "@/lib/queries/post.queries";
+import PostSkeleton from "./postComponents/PostSkeleton";
+import PostHeader from "./postComponents/PostHeader";
+import PostBody from "./postComponents/PostBody";
+import PostFooter from "./postComponents/PostFooter";
 
-export default function Post({ postId }) {
-  const [commentsOpen, setCommentsOpen] = useState(false);
+export default function Post({ postId, isModal = false }) {
+  const {
+    data: post,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetPostQuery(postId);
+
+  if (isLoading || (isModal && isFetching)) return <PostSkeleton />;
+  if (isError) return "error in loading post";
+
+  if (post.deleted) return null;
+  // <span className="w-full max-w-sm rounded-lg bg-gray-200 py-2 text-center text-lg font-medium text-red-700">
+  //   This post has been deleted
+  // </span>
 
   return (
     <li className="flex w-full flex-col border-t-2 border-gray-300 px-3 pt-4 first-of-type:border-t-0 md:max-w-lg">
-      <PostContent postId={postId} setCommentsOpen={setCommentsOpen} />
-
-      <Collapsible open={commentsOpen}>
-        <CollapsibleContent className="CollapsibleContent">
-          <CommentSection postId={postId} setCommentsOpen={setCommentsOpen} />
-        </CollapsibleContent>
-      </Collapsible>
+      <PostHeader post={post} publisher={post.publisher} />
+      <PostBody post={post} />
+      <PostFooter post={post} />
     </li>
   );
 }

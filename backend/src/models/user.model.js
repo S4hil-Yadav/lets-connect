@@ -25,11 +25,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       validate: {
-        validator: function (value) {
-          const parts = value.split(" ");
-          return parts.length <= 5 && parts.every(part => part.length <= 20);
-        },
-        message: "Only 5 words of max length 20 are allowed",
+        validator: value => value.split(" ").length <= 5 && value.length <= 30,
+        message: "Only 5 words and max length 30 is allowed",
       },
     },
     profilePic: { type: String, default: "" },

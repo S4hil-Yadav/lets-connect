@@ -1,5 +1,5 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import userReducer from "./user/userSlice";
+import draftReducer from "./draft/draftSlice";
 import themeReducer from "./theme/themeSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -8,18 +8,19 @@ const persistConfig = {
   key: "root",
   storage,
   version: 1,
-  blacklist: ["user"],
+  // blacklist: ["user"],
 };
 
-const userConfig = {
-  key: "user",
-  storage,
-  blacklist: ["error", "loading"],
-};
+// const userConfig = {
+//   key: "user",
+//   storage,
+//   blacklist: ["error", "loading"],
+// };
 
 const rootReducer = combineReducers({
-  user: persistReducer(userConfig, userReducer),
+  // user: persistReducer(userConfig, userReducer),
   theme: themeReducer,
+  draft: draftReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -13,25 +13,17 @@ import {
 } from "@/lib/mutations/post.mutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
-export default function PostFooter({ post, setCommentsOpen }) {
+export default function PostFooter({ post }) {
   return (
     <div className="flex w-full justify-between py-6">
       <div className="flex bg-gray-100">
         <LikeButton post={post} />
         <DislikeButton post={post} />
       </div>
-      {setCommentsOpen ? (
-        <CommentButton setCommentsOpen={setCommentsOpen} post={post} />
-      ) : (
-        <button className="flex items-center justify-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1">
-          <AiOutlineComment size={20} />
-          <span className="text-xs font-medium text-gray-600">
-            {post.comments.length}
-          </span>
-        </button>
-      )}
-      <ShareButton />
+      <CommentButton post={post} />
+      <ShareButton postId={post._id} />
     </div>
   );
 }
@@ -123,9 +115,17 @@ function CommentButton({ post }) {
   );
 }
 
-function ShareButton() {
+function ShareButton({ postId }) {
   return (
-    <button className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1">
+    <button
+      onClick={() =>
+        navigator.clipboard
+          .writeText(window.location.origin + "/post/" + postId)
+          .then(() => toast.success("Post link copied to clipboard!"))
+          .catch(() => toast.error("Failed to copy URL"))
+      }
+      className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1"
+    >
       <AiOutlineShareAlt size={20} />
     </button>
   );

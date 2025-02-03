@@ -5,7 +5,7 @@ import {
   useGetFollowingSetQuery,
 } from "@/lib/queries/user.queries";
 import { Skeleton } from "../ui/skeleton";
-import { UnfollowConfirmationDialog } from "../ConfirmationDialogs";
+import ConfirmationAlert from "../alerts/ConfirmationAlert";
 
 export default function HandleUserFollowButton({
   isLoadingUser,
@@ -44,25 +44,20 @@ export default function HandleUserFollowButton({
       : "send";
 
   return (
-    <div className="flex h-5 w-fit min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-4 font-medium text-white shadow-md disabled:cursor-progress md:px-2 md:text-base">
+    <div className="flex h-8 w-20 items-center justify-center rounded-lg bg-violet-400 font-medium text-white md:text-base">
       {isPending ? (
         <ImSpinner3 className="size-5 animate-spin" />
-      ) : action === "send" ? (
+      ) : action === "send" || action === "cancel" ? (
         <button
           onClick={() => handleFollowingRequest({ action, receiver, reqId })}
           disabled={isPending}
+          className="h-full flex-1 rounded-lg hover:bg-violet-300"
         >
-          Follow
-        </button>
-      ) : action === "cancel" ? (
-        <button
-          onClick={() => handleFollowingRequest({ action, receiver, reqId })}
-          disabled={isPending}
-        >
-          Cancel
+          {action === "send" ? "Follow" : "Cancel"}
         </button>
       ) : action === "unfollow" ? (
-        <UnfollowConfirmationDialog
+        <ConfirmationAlert
+          type="unfollow"
           receiver={receiver}
           onConfirm={() => handleFollowingRequest({ action, receiver, reqId })}
         />

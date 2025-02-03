@@ -1,31 +1,30 @@
-import { useState } from "react";
 import toast from "react-hot-toast";
 import { FaRegPlusSquare } from "react-icons/fa";
 import { FiMinusCircle } from "react-icons/fi";
 import { CgSpinnerTwo } from "react-icons/cg";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { useCreatePostMutation } from "@/lib/mutations/post.mutations";
+import { useDispatch, useSelector } from "react-redux";
+import { setDraft, clearDraft } from "@/redux/draft/draftSlice";
+import BigCarousel from "@/components/postComponents/BigCarousel";
+import { useRef, useState } from "react";
 
 export default function CreatePostPage() {
-  const [post, setPost] = useState({ title: "", body: "", images: [] });
+  const dispatch = useDispatch(),
+    { draft } = useSelector((state) => state.draft);
 
-  const { mutate: createPostMutation, isPending } = useMutation({
-    mutationFn: (post) => axios.put("/api/v1/posts/create-post", post),
-    onSuccess: () => {
-      setPost({ title: "", body: "", images: [] });
-      toast.success("Posted");
-    },
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
-  });
+  const imgDialogRef = useRef(null),
+    [imgIdx, setImgIdx] = useState(0);
+
+  const { mutateAsync: createPost, isPending } = useCreatePostMutation();
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      if (!post.body.trim() && !post.images.length)
+      if (!draft.body.trim() && !draft.images.length)
         throw new Error("Post can't be empty");
 
-      createPostMutation(post);
+      await createPost(draft);
+      dispatch(clearDraft());
     } catch (error) {
       toast.error(error.message);
     }
@@ -37,11 +36,15 @@ export default function CreatePostPage() {
         Create Post
       </span>
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
-        <TitleInput post={post} setPost={setPost} />
-        <BodyInput post={post} setPost={setPost} />
-        <ImageInput post={post} setPost={setPost} />
+        <TitleInput draft={draft} />
+        <BodyInput draft={draft} />
+        <ImageInput
+          draft={draft}
+          setImgIdx={setImgIdx}
+          imgDialogRef={imgDialogRef}
+        />
         <button
-          className="w-fit self-center rounded-lg bg-violet-400 px-5 py-3 text-xl font-medium text-white shadow-md"
+          className="flex items-center gap-2 self-center rounded-lg bg-violet-400 px-5 py-2 text-xl font-medium text-white shadow-md hover:bg-violet-300 disabled:bg-violet-300"
           type="submit"
           disabled={isPending}
         >
@@ -49,14 +52,22 @@ export default function CreatePostPage() {
           {isPending && <CgSpinnerTwo className="size-5 animate-spin" />}
         </button>
       </form>
+      <BigCarousel
+        dialogRef={imgDialogRef}
+        images={draft.images}
+        imgIdx={imgIdx}
+        setImgIdx={setImgIdx}
+      />
     </div>
   );
 }
 
-function TitleInput({ post, setPost }) {
+function TitleInput({ draft }) {
+  const dispatch = useDispatch();
+
   function handleTitleChange(e) {
     e.target.value = e.target.value.replace(/[\r\n]+/g, " ");
-    setPost({ ...post, title: e.target.value });
+    dispatch(setDraft({ ...draft, title: e.target.value }));
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
   }
@@ -66,7 +77,7 @@ function TitleInput({ post, setPost }) {
       <textarea
         id="title-input"
         placeholder="Enter the title"
-        value={post.title}
+        value={draft.title}
         maxLength={300}
         autoFocus
         onChange={handleTitleChange}
@@ -74,15 +85,17 @@ function TitleInput({ post, setPost }) {
         className="resize-none overflow-hidden break-words rounded-lg border border-gray-400 bg-white p-2 text-lg font-semibold focus:border-gray-600"
       />
       <label htmlFor="title-input" className="mr-1 mt-1 flex self-end">
-        <span className="align-top text-xs">{post.title.length}/300</span>
+        <span className="align-top text-xs">{draft.title.length}/300</span>
       </label>
     </div>
   );
 }
 
-function BodyInput({ post, setPost }) {
+function BodyInput({ draft }) {
+  const dispatch = useDispatch();
+
   function handleBodyChange(e) {
-    setPost({ ...post, body: e.target.value });
+    dispatch(setDraft({ ...draft, body: e.target.value }));
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
   }
@@ -90,7 +103,7 @@ function BodyInput({ post, setPost }) {
     <div className="flex flex-col overflow-clip rounded-lg border border-gray-400 bg-white has-[>textarea:focus]:border-gray-600">
       <span className="bg-gray-white hidden border p-2 align-top text-xs"></span>
       <textarea
-        value={post.body}
+        value={draft.body}
         placeholder="Enter the body"
         autoFocus
         onChange={handleBodyChange}
@@ -101,7 +114,9 @@ function BodyInput({ post, setPost }) {
   );
 }
 
-function ImageInput({ post, setPost }) {
+function ImageInput({ draft, setImgIdx, imgDialogRef }) {
+  const dispatch = useDispatch();
+
   async function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -111,28 +126,36 @@ function ImageInput({ post, setPost }) {
     reader.readAsDataURL(file);
 
     reader.onload = () =>
-      setPost({ ...post, images: [...post.images, reader.result] });
+      dispatch(
+        setDraft({ ...draft, images: [...draft.images, reader.result] }),
+      );
 
     e.target.value = [];
   }
 
   return (
     <div className="flex flex-wrap gap-3">
-      {post.images.map((image, i) => (
+      {draft.images.map((image, i) => (
         <div
           key={i}
           className="relative flex size-20 items-center rounded-lg border-2 border-gray-300 p-1 shadow-lg"
         >
           <img
             src={image}
+            onClick={() => {
+              setImgIdx(i);
+              imgDialogRef.current.showModal();
+            }}
             className="size-fit rounded-md border object-contain shadow-lg"
           />
           <FiMinusCircle
             onClick={() =>
-              setPost({
-                ...post,
-                images: post.images.filter((_img, idx) => idx !== i),
-              })
+              dispatch(
+                setDraft({
+                  ...draft,
+                  images: draft.images.filter((_img, idx) => idx !== i),
+                }),
+              )
             }
             className="absolute right-0 top-0 size-5 cursor-pointer rounded-full text-red-500"
           />

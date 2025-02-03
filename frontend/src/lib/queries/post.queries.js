@@ -15,8 +15,11 @@ export function useSearchPostsQuery(text) {
 }
 
 export function useGetPostsQuery() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
   return useQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", authUser?._id],
     queryFn: () =>
       axios.get("/api/v1/posts/get-all-posts").then((res) => res.data),
   });
@@ -27,11 +30,23 @@ export function useGetPostQuery(postId) {
     queryKey: ["post", postId],
     queryFn: () =>
       axios.get(`/api/v1/posts/${postId}/get-post`).then((res) => res.data),
-    retry: (_count, error) => error.response?.status !== 404,
+    retry: (_count, error) => error.response?.status === 500,
   });
 }
 
-export function useGetLikedPostSet() {
+export function useGetSavedPostsQuery() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
+  return useQuery({
+    queryKey: ["saved-posts", authUser?._id],
+    queryFn: () =>
+      axios.get("/api/v1/posts/get-saved-posts").then((res) => res.data),
+    enabled: !!authUser,
+  });
+}
+
+export function useGetLikedPostsQuery() {
   const queryClient = useQueryClient();
   const authUser = queryClient.getQueryData(["authUser"]);
 
@@ -41,12 +56,11 @@ export function useGetLikedPostSet() {
       axios
         .get("/api/v1/posts/get-liked-posts/" + authUser._id)
         .then((res) => res.data),
-    select: (likedPosts) => new Set(likedPosts),
     enabled: !!authUser,
   });
 }
 
-export function useGetDislikedPostSet() {
+export function useGetDislikedPostsQQuery() {
   const queryClient = useQueryClient();
   const authUser = queryClient.getQueryData(["authUser"]);
 
@@ -54,7 +68,6 @@ export function useGetDislikedPostSet() {
     queryKey: ["disliked-posts"],
     queryFn: () =>
       axios.get("/api/v1/posts/get-disliked-posts").then((res) => res.data),
-    select: (dislikedPosts) => new Set(dislikedPosts),
     enabled: !!authUser,
   });
 }

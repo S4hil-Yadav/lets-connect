@@ -19,25 +19,36 @@ export function useGetUserQuery(userId) {
     queryKey: ["user", userId],
     queryFn: () =>
       axios.get("/api/v1/users/get-user/" + userId).then((res) => res.data),
+    retry: (count, error) => count < 3 && error.response?.status === 500,
+    staleTime: 0,
   });
 }
 
 export function useGetFollowerRequestsQuery() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
   return useQuery({
-    queryKey: ["follower-requests"],
+    queryKey: ["follower-requests", authUser?._id],
     queryFn: () =>
       axios.get("/api/v1/follow/get-follower-requests").then((res) => res.data),
     staleTime: 15 * 1000,
+    enabled: !!authUser,
   });
 }
 
 export function useGetFollowingRequestsQuery() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
   return useQuery({
-    queryKey: ["following-requests"],
+    queryKey: ["following-requests", authUser?._id],
     queryFn: () =>
       axios
         .get("/api/v1/follow/get-following-requests")
         .then((res) => res.data),
+    retry: (count, error) => count < 3 && error.response?.status === 500,
+    enabled: !!authUser,
   });
 }
 
@@ -46,7 +57,7 @@ export function useGetFollowingRequestMapQuery() {
   const authUser = queryClient.getQueryData(["authUser"]);
 
   return useQuery({
-    queryKey: ["following-requests"],
+    queryKey: ["following-requests", authUser?._id],
     queryFn: () =>
       axios
         .get("/api/v1/follow/get-following-requests")
@@ -56,6 +67,7 @@ export function useGetFollowingRequestMapQuery() {
         map[req.receiver._id] = req._id;
         return map;
       }, {}),
+    retry: (count, error) => count < 3 && error.response?.status === 500,
     enabled: !!authUser,
   });
 }

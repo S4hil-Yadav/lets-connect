@@ -29,12 +29,7 @@ export default function EditProfile() {
 
   const { mutateAsync: handleUpdate, isPending } = useUpdateUserMutation();
 
-  const [userFields, setUserFields] = useState({
-    fullname: authUser?.fullname,
-    username: authUser?.username,
-    email: authUser?.email,
-    profilePic: authUser?.profilePic,
-  });
+  const [userFields, setUserFields] = useState(authUser);
   const pfpRef = useRef(null);
 
   const [changed, setChanged] = useState(false);
@@ -55,6 +50,7 @@ export default function EditProfile() {
     reader.onload = () =>
       setUserFields({ ...userFields, profilePic: reader.result });
 
+    e.target.value = [];
     setChanged(true);
   }
 
@@ -110,7 +106,7 @@ export default function EditProfile() {
           onSubmit={handleSubmit}
         >
           <div className="flex flex-col gap-3">
-            <label className="relative mx-auto w-fit cursor-pointer rounded-full border-8 border-double border-gray-600">
+            <label className="relative mx-auto mb-3 w-fit cursor-pointer rounded-full border-8 border-double border-gray-600">
               <DropdownMenu>
                 <DropdownMenuTrigger className="absolute right-0 z-10 rounded-full bg-black bg-opacity-50 p-1 text-white">
                   <MdOutlineEdit size={30} />

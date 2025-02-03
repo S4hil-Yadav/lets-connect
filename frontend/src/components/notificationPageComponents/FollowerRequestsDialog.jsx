@@ -74,16 +74,16 @@ function Senders({ followRequests, isLoading, isError }) {
   if (isError) return <>Failed to load Follow Requests</>;
 
   return (
-    <ul className="flex flex-col">
+    <ul className="flex flex-col gap-2">
       {followRequests?.map((req) => (
         <li
           key={req.sender._id}
-          className="flex items-center justify-between rounded-lg border-b border-dashed border-slate-400 last:border-none hover:bg-gray-200"
+          className="user-card flex items-center justify-between rounded-lg border-b border-dashed border-slate-400 last:border-none"
         >
           <DialogClose asChild>
             <Link
               to={"/profile/" + req.sender._id}
-              className="flex flex-1 cursor-pointer items-center py-2 pl-2"
+              className="user-link flex flex-1 cursor-pointer items-center py-2 pl-2"
             >
               <Avatar
                 src={req.sender.profilePic}
@@ -116,9 +116,9 @@ function SenderRequestHandleButtons({ reqId, sender }) {
   } = useHandleFollowerRequestMutation();
 
   return (
-    <div className="mr-2 flex justify-center gap-2">
+    <div className="mr-2 flex w-20 justify-center">
       <button
-        className="flex items-center justify-center disabled:cursor-default"
+        className="flex flex-1 items-center justify-center disabled:cursor-default"
         onClick={() => handleRequest({ action: "reject", sender, reqId })}
         disabled={isAccepting || isRejecting}
       >
@@ -132,7 +132,7 @@ function SenderRequestHandleButtons({ reqId, sender }) {
         )}
       </button>
       <button
-        className="flex items-center justify-center disabled:cursor-default"
+        className="flex flex-1 items-center justify-center disabled:cursor-default"
         onClick={() => handleRequest({ action: "accept", sender, reqId })}
         disabled={isAccepting || isRejecting}
       >

@@ -5,7 +5,7 @@ import {
 } from "@/lib/queries/user.queries";
 import FDialog, { FDialogContent, HandleFollowButton } from "./FDialog";
 import { useQueryClient } from "@tanstack/react-query";
-import AuthAlertDialog from "../AuthAlertDialog";
+import AuthAlertDialog from "../alerts/AuthAlert";
 
 export default function FollowingDialog({ userId }) {
   const queryClient = useQueryClient();

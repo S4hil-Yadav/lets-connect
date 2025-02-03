@@ -14,22 +14,30 @@ import { useGetAuthQuery } from "./lib/queries/auth.queries";
 import PostModal from "./components/postComponents/PostModal";
 import EditProfile from "./components/profilePageComponents/EditProfile";
 import { useQueryClient } from "@tanstack/react-query";
+import SavedPostsPage from "./pages/SavedPostsPage";
+import LikedPostsPage from "./pages/LikedPostsPage";
+import RestrictedPage from "./pages/RestrictedPage";
 import { ImSpinner2 } from "react-icons/im";
 
 export default function App() {
   const { isLoading, isSuccess } = useGetAuthQuery();
-  const location = useLocation();
+  const location = useLocation(),
+    navLoc = location.state?.backgroundLocation
+      ? location.state?.backgroundLocation.pathname
+      : location.pathname;
 
   const includeSideNavbar = !excludeSideNavbarRoutes.includes(
-    location.pathname.split("/").filter(Boolean)[0] || "",
+    navLoc.split("/").filter(Boolean)[0] || "",
   );
   const includeSidebar = !excludeSidebarRoutes.includes(
-    location.pathname.split("/").filter(Boolean)[0] || "",
+    navLoc.split("/").filter(Boolean)[0] || "",
   );
 
   if (isLoading)
     return (
-      <ImSpinner2 className="mt-5 size-7 w-full animate-spin text-violet-700" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <ImSpinner2 className="size-12 animate-spin text-violet-700" />
+      </div>
     );
 
   return (
@@ -37,7 +45,6 @@ export default function App() {
       <div
         className={`flex w-full flex-col md:order-last ${includeSideNavbar && "md:w-[calc(100%-12.24rem)]"}`}
       >
-        <div className="hidden h-10 w-full" />
         <div className="flex w-full">
           <div
             className={`flex min-h-screen w-full flex-col ${includeSidebar && "lg:w-[calc(100%-20rem)]"}`}
@@ -58,7 +65,6 @@ function PageRoutes({ isAuthUser }) {
 
   const location = useLocation(),
     pathRoot = location.pathname.split("/").filter(Boolean)[0];
-  location.pathname.split("/").filter(Boolean)[0];
 
   const bgLocation =
     !location.state?.backgroundLocation && pathRoot === "post"
@@ -70,10 +76,7 @@ function PageRoutes({ isAuthUser }) {
   return (
     <>
       <Routes location={bgLocation || location}>
-        <Route
-          path="/"
-          element={<Navigate to={isAuthUser ? "/home" : "/login"} />}
-        />
+        <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
         <Route
           path="/signup"
@@ -84,10 +87,37 @@ function PageRoutes({ isAuthUser }) {
           element={isAuthUser ? <Navigate to="/home" /> : <LoginPage />}
         />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/create" element={<CreatePostPage />} />
-        <Route path="/notifications" element={<NotificationPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/create"
+          element={isAuthUser ? <CreatePostPage /> : <RestrictedPage />}
+        />
+        <Route
+          path="/notifications"
+          element={isAuthUser ? <NotificationPage /> : <RestrictedPage />}
+        />
+        <Route
+          path="/settings"
+          element={isAuthUser ? <SettingsPage /> : <RestrictedPage />}
+        />
+        <Route
+          path="/profile/"
+          element={
+            isAuthUser ? (
+              <Navigate to={"/profile/" + authUser._id} />
+            ) : (
+              <RestrictedPage />
+            )
+          }
+        />
         <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route
+          path="/liked-posts"
+          element={isAuthUser ? <LikedPostsPage /> : <RestrictedPage />}
+        />
+        <Route
+          path="/saved-posts"
+          element={isAuthUser ? <SavedPostsPage /> : <RestrictedPage />}
+        />
         <Route
           path="*"
           element={

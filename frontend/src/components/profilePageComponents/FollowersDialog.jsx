@@ -9,7 +9,7 @@ import FDialog, {
   RemoveFollowerButton,
 } from "./FDialog";
 import { useQueryClient } from "@tanstack/react-query";
-import AuthAlertDialog from "../AuthAlertDialog";
+import AuthAlert from "../alerts/AuthAlert";
 
 export default function FollowersDialog({ userId }) {
   const queryClient = useQueryClient();
@@ -52,11 +52,15 @@ export default function FollowersDialog({ userId }) {
           "This user doesn't have any follower"
         )
       ) : (
-        <ul className="flex w-full flex-col">
+        <ul className="flex w-full flex-col gap-2">
           {followers.map((follower) => (
             <FDialogContent key={follower._id} user={follower}>
               {!authUser?._id ? (
-                <AuthAlertDialog />
+                <AuthAlert>
+                  <h1 className="flex h-5 w-fit min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-4 font-medium text-white shadow-md hover:bg-violet-300 disabled:cursor-progress md:px-2 md:text-base">
+                    Follow
+                  </h1>
+                </AuthAlert>
               ) : userId === authUser._id ? (
                 <RemoveFollowerButton follower={follower} />
               ) : (

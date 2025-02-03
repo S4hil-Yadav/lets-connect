@@ -13,11 +13,7 @@ import {
   useHandleFollowingMutation,
   useRemoveFollowerMutation,
 } from "@/lib/mutations/follow.mutations";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  RemoveConfirmationDialog,
-  UnfollowConfirmationDialog,
-} from "../ConfirmationDialogs";
+import ConfirmationAlert from "../alerts/ConfirmationAlert";
 
 export default function FDialog({ userId, type, count, children }) {
   return (
@@ -54,10 +50,10 @@ export default function FDialog({ userId, type, count, children }) {
 
 export function FDialogContent({ user, children }) {
   return (
-    <li className="flex w-full items-center justify-between gap-2 overflow-clip rounded-lg border-b border-dashed border-slate-400 px-2 last:border-none hover:bg-gray-200">
+    <li className="user-card flex w-full items-center justify-between gap-2 overflow-clip rounded-lg px-2">
       <Link
         to={"/profile/" + user._id}
-        className="flex w-full cursor-pointer items-center gap-2 py-2"
+        className="user-link flex w-full cursor-pointer items-center gap-2 py-2"
       >
         <Avatar
           src={user.profilePic}
@@ -85,9 +81,6 @@ export function HandleFollowButton({
   authFollowingSet,
   followingRequestReceiverMap,
 }) {
-  const queryClient = useQueryClient();
-  const authUser = queryClient.getQueryData(["authUser"]);
-
   const { mutate: handleFollowingRequest, isPending } =
     useHandleFollowingMutation();
 
@@ -100,27 +93,20 @@ export function HandleFollowButton({
       : "send";
 
   return (
-    <div className="flex min-h-5 min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-1 text-sm text-white disabled:cursor-default md:px-2 md:text-base">
-      {receiver._id === authUser?._id ? (
-        "You"
-      ) : isPending ? (
+    <div className="flex h-8 w-20 items-center justify-center rounded-lg bg-violet-300 font-medium text-white md:text-base">
+      {isPending ? (
         <ImSpinner3 className="size-5 animate-spin" />
-      ) : action === "send" ? (
+      ) : action === "send" || action === "cancel" ? (
         <button
           onClick={() => handleFollowingRequest({ action, receiver, reqId })}
           disabled={isPending}
+          className="h-full flex-1 rounded-lg bg-violet-400 hover:bg-violet-300"
         >
-          Follow
-        </button>
-      ) : action === "cancel" ? (
-        <button
-          onClick={() => handleFollowingRequest({ action, receiver, reqId })}
-          disabled={isPending}
-        >
-          Cancel
+          {action === "send" ? "Follow" : "Cancel"}
         </button>
       ) : action === "unfollow" ? (
-        <UnfollowConfirmationDialog
+        <ConfirmationAlert
+          type="unfollow"
           receiver={receiver}
           onConfirm={() => handleFollowingRequest({ action, receiver, reqId })}
         />
@@ -135,11 +121,12 @@ export function RemoveFollowerButton({ follower }) {
   const { mutate: handleRemove, isPending } = useRemoveFollowerMutation();
 
   return (
-    <div className="flex min-h-5 min-w-20 items-center justify-center rounded-lg bg-violet-400 px-1 py-1 text-sm text-white disabled:cursor-default md:px-2 md:text-base">
+    <div className="flex h-8 w-24 items-center justify-center rounded-lg bg-violet-300 font-medium text-white md:text-base">
       {isPending ? (
         <ImSpinner3 className="size-5 animate-spin" />
       ) : (
-        <RemoveConfirmationDialog
+        <ConfirmationAlert
+          type="remove"
           receiver={follower}
           onConfirm={() => handleRemove(follower._id)}
         />

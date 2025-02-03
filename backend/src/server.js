@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import authRoute from "./routes/auth.route.js";
 import userRoute from "./routes/user.route.js";
@@ -11,6 +12,9 @@ import notificationRoute from "./routes/notification.route.js";
 import { connectDB } from "./lib/db.js";
 
 const app = express();
+
+const __dirname = path.resolve();
+const PORT = process.env.PORT || 2000;
 
 dotenv.config();
 app.use(express.json({ limit: "25mb" }));
@@ -24,8 +28,13 @@ app.use("/api/v1/posts", postRoute);
 app.use("/api/v1/follow", followRoute);
 app.use("/api/v1/comments", commentRoute);
 
-app.listen(2000, () => {
-  console.log("Server is running on port", process.env.PORT);
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.get("*", (_req, res) => res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html")));
+}
+
+app.listen(PORT, () => {
+  console.log("Server is running on port", PORT);
   connectDB();
 });
 

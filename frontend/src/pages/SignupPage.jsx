@@ -4,17 +4,14 @@ import toast from "react-hot-toast";
 import { Input, SubmitButton } from "../components/Input";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { useSignupMutation } from "@/lib/mutations/auth.mutations";
 
 export default function SignupPage() {
-  const queryClient = useQueryClient();
-
   const [userFields, setUserFields] = useState({
-    fullname: "Sahil Yadav",
-    username: "S4hil",
-    email: "sahil@gmail.com",
-    password: "123456",
+    fullname: "",
+    username: "",
+    email: "",
+    password: "",
   });
 
   const inputs = useRef(null);
@@ -23,19 +20,7 @@ export default function SignupPage() {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
-  const {
-    mutate: signUpMutation,
-    isPending,
-    isSuccess,
-  } = useMutation({
-    mutationFn: () => axios.post("/api/v1/auth/signup", userFields),
-    onSuccess: () => {
-      toast.success("Signup successful");
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
-    },
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
-  });
+  const { mutate: signUp, isPending, isSuccess } = useSignupMutation();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -63,13 +48,11 @@ export default function SignupPage() {
 
       if (
         userFields.fullname.split(" ").length > 5 ||
-        !userFields.fullname.split(" ").every((part) => part.length <= 20)
+        userFields.fullname.length > 30
       )
-        throw new Error(
-          "Only 5 words of max length 20 are allowed in full name",
-        );
+        throw new Error("Only 5 words and max length 30 is allowed");
 
-      signUpMutation();
+      signUp(userFields);
     } catch (error) {
       toast.error(error.message);
     }

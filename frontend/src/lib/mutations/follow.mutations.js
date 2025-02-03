@@ -18,7 +18,7 @@ export function useHandleFollowerRequestMutation() {
       ),
 
     onSuccess: (_data, { action, sender, reqId }) => {
-      queryClient.setQueryData(["follower-requests"], (reqs) =>
+      queryClient.setQueryData(["follower-requests", authUser._id], (reqs) =>
         reqs?.filter((req) => req._id !== reqId),
       );
       if (action === "accept")
@@ -53,36 +53,56 @@ export function useHandleFollowingMutation() {
           : axios.delete("/api/v1/follow/unfollow/" + receiver._id),
 
     onSuccess: ({ reqId }, { action, receiver, reqId: reqIdCancel }) => {
-      action === "unfollow"
-        ? queryClient.setQueryData(
-            ["followings", authUser?._id],
-            (followings) =>
-              followings?.filter((following) => following._id !== receiver._id),
-          )
-        : queryClient.setQueryData(["following-requests"], (reqs) =>
+      if (action === "unfollow") {
+        queryClient.setQueryData(["followings", authUser._id], (followings) =>
+          followings?.filter((following) => following._id !== receiver._id),
+        );
+        queryClient.setQueryData(["followers", receiver._id], (followers) =>
+          followers?.filter((follower) => follower._id !== authUser._id),
+        );
+      } else {
+        queryClient.setQueryData(
+          ["following-requests", authUser._id],
+          (reqs) =>
             reqs && action === "send"
               ? [...reqs, { _id: reqId, receiver }]
               : reqs?.filter((req) => req._id !== reqIdCancel),
-          );
+        );
+      }
     },
 
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
+    onError: async (err, { receiver }) => {
+      toast.error(err.response?.data.message || "Something went wrong");
+      await queryClient.invalidateQueries({
+        queryKey: ["following-requests", authUser?._id],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["followings", authUser?._id],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["followers", receiver._id],
+      });
+    },
   });
 }
 
 export function useRemoveFollowerMutation() {
   const queryClient = useQueryClient(),
-    { _id: authUserId } = queryClient.getQueryData(["authUser"]) || {};
+    authUser = queryClient.getQueryData(["authUser"]);
 
   return useMutation({
     mutationFn: (followerId) =>
       axios.delete("/api/v1/follow/remove-follower/" + followerId),
     onSuccess: (_data, followerId) =>
-      queryClient.setQueryData(["followers", authUserId], (followers) =>
+      queryClient.setQueryData(["followers", authUser._id], (followers) =>
         followers?.filter((follower) => follower._id !== followerId),
       ),
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
+    onError: (err, followerId) => {
+      if (err.response?.status === 404)
+        queryClient.setQueryData(["followers", authUser._id], (followers) =>
+          followers?.filter((follower) => follower._id !== followerId),
+        );
+      else toast.error(err.response?.data.message || "Something went wrong");
+    },
   });
 }

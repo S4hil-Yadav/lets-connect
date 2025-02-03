@@ -14,6 +14,7 @@ const postSchema = new mongoose.Schema(
     comments: [comment],
     shares: Number,
     updated: { type: Boolean, default: false },
+    deleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

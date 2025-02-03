@@ -4,34 +4,19 @@ import toast from "react-hot-toast";
 import { Input, SubmitButton } from "../components/Input";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { useLoginMutation } from "@/lib/mutations/auth.mutations";
 
 export default function LoginPage() {
-  const queryClient = useQueryClient();
-
   const [userFields, setUserFields] = useState({
-    email: "sahil@gmail.com",
-    password: "123456",
+    email: "",
+    password: "",
   });
 
   function handleChange(e) {
     setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
   }
 
-  const {
-    mutate: loginMutation,
-    isPending,
-    isSuccess,
-  } = useMutation({
-    mutationFn: () => axios.post("/api/v1/auth/login", userFields),
-    onSuccess: () => {
-      toast.success("Login successful");
-      queryClient.invalidateQueries(["authUser"]);
-    },
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
-  });
+  const { mutate: login, isPending, isSuccess } = useLoginMutation();
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -42,7 +27,7 @@ export default function LoginPage() {
       if (!/.+@.+\..+/.test(userFields.email))
         throw new Error("Invalid email address");
 
-      loginMutation();
+      login(userFields);
     } catch (error) {
       toast.error(error.message);
     }

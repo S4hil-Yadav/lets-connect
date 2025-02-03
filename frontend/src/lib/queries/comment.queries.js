@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-export function useGetCommentsByIdsQuery(postId) {
+export function useGetCommentsQuery(postId) {
   return useQuery({
     queryKey: ["post", postId, "comments"],
     queryFn: () =>

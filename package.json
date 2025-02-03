@@ -1,6 +1,14 @@
 {
+  "name": "lets-connect",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "f": "cd frontend && npm run dev",
-    "b": "cd backend && npm run dev"
-  }
+    "dev": "npm run dev --prefix backend",
+    "start": "npm run start --prefix backend",
+    "build": "npm i --prefix frontend && npm i --prefix backend && npm run build --prefix frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }

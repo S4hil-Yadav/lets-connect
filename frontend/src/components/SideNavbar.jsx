@@ -1,10 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { HiOutlineHome } from "react-icons/hi";
 import { IoSearch, IoCreateOutline } from "react-icons/io5";
-import {
-  MdNotificationsNone,
-  MdOutlineNotificationsActive,
-} from "react-icons/md";
+import { MdNotificationsNone } from "react-icons/md";
 import { RiSettings4Line } from "react-icons/ri";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,18 +16,16 @@ export default function SideNavbar() {
         <LinkButton linkTo="home" Icon={HiOutlineHome} />
         <LinkButton linkTo="search" Icon={IoSearch} />
         <LinkButton linkTo="create" Icon={IoCreateOutline} />
-        <LinkButton
-          linkTo="notifications"
-          Icon={
+        <LinkButton linkTo="notifications" Icon={MdNotificationsNone} />
+        {/* Icon={
             authUser?.notifications?.some((notification) => !notification.read)
               ? MdOutlineNotificationsActive
               : MdNotificationsNone
-          }
-        />
+          } */}
         <div className="hidden md:block md:flex-grow" />
         <LinkButton linkTo="settings" Icon={RiSettings4Line} />
         <LinkButton
-          linkTo={"profile/" + authUser?._id}
+          linkTo={"profile/" + (authUser?._id || "")}
           Icon={FaRegCircleUser}
         />
       </div>
@@ -39,6 +34,8 @@ export default function SideNavbar() {
 }
 
 function LinkButton({ linkTo, Icon }) {
+  const location = useLocation();
+
   return (
     <Link
       to={linkTo}

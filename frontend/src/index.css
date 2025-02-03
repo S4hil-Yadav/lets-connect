@@ -14,6 +14,20 @@
   textarea {
     @apply outline-none transition-colors;
   }
+  pre {
+    @apply font-exo;
+  }
+  dialog::backdrop {
+    backdrop-filter: blur(2px);
+  }
+  img {
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
 }
 
 @layer base {
@@ -125,6 +139,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .user-card:has(.user-link:hover) {
+    @apply bg-gray-200;
   }
   .CollapsibleContent {
     overflow: hidden;

@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { useGetNotificationsQuery } from "@/lib/queries/notification.queries";
 import { Link, useLocation } from "react-router-dom";
 import { ImSpinner2 } from "react-icons/im";
+import { MdErrorOutline } from "react-icons/md";
 
 export default function NotificationPage() {
   const {
@@ -14,7 +15,7 @@ export default function NotificationPage() {
   } = useGetNotificationsQuery();
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-gray-50 p-5 md:px-10">
+    <div className="flex min-h-screen w-full flex-col bg-gray-50 p-5 md:px-10">
       <span className="mb-8 text-center text-4xl font-bold text-gray-700">
         Notifications
       </span>
@@ -27,13 +28,21 @@ export default function NotificationPage() {
       {isLoading ? (
         <ImSpinner2 className="mt-5 size-7 w-full animate-spin text-violet-700" />
       ) : isError ? (
-        "Failed to get notifications"
+        <span className="flex items-center gap-3 self-center text-lg font-medium">
+          Couldn&apos;t load notifications
+          <MdErrorOutline size={25} />
+        </span>
       ) : !notifications.length ? (
-        "You don't have any notifications"
+        <span className="flex items-center gap-3 text-lg font-medium">
+          You don&apos;t have notifications
+        </span>
       ) : (
-        <ul className="flex w-full flex-col gap-5">
+        <ul className="flex w-full flex-col justify-center gap-5">
           {notifications.map((notification) => (
-            <li key={notification._id} className="flex w-full items-center">
+            <li
+              key={notification._id}
+              className="flex w-full items-center justify-center"
+            >
               <NotificationCard notification={notification} />
             </li>
           ))}
@@ -68,7 +77,7 @@ function NotificationCard({ notification }) {
             : notification.type === "postLike"
               ? ["liked your post ", postTag || ""]
               : notification.type === "comment"
-                ? ["commented on your post ", `"` + postTitle + `"`]
+                ? ["commented on your post ", postTag || ""]
                 : ["", ""];
     },
     [notification],
@@ -83,7 +92,7 @@ function NotificationCard({ notification }) {
       : null;
 
   return (
-    <div className="relative flex w-full items-center justify-between rounded-md bg-white px-3 py-3 shadow-md">
+    <div className="relative flex w-full max-w-3xl items-center justify-between rounded-md bg-white px-3 py-3 shadow-md hover:bg-gray-100">
       <div className="flex w-full gap-3">
         <Link
           to={navPath}
@@ -97,8 +106,8 @@ function NotificationCard({ notification }) {
         />
         <Link to={"/profile/" + notification.sender?._id}>
           <Avatar
-            src={notification?.sender?.profilePic}
-            name={notification?.sender?.fullname}
+            src={notification.sender.profilePic}
+            name={notification.sender.fullname}
             size="50"
             round={true}
           />

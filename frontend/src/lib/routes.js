@@ -5,4 +5,5 @@ export const excludeSidebarRoutes = [
   "signup",
   "profile",
   "edit-profile",
+  "post",
 ];

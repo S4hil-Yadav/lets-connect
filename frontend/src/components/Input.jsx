@@ -94,7 +94,7 @@ export function SearchInput({ onSearchChange }) {
 export function SubmitButton({ type, processing, redirecting, disabled }) {
   return (
     <button
-      className={`bg-pos-0 hover:bg-pos-100 flex flex-1 justify-center bg-opacity-100 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 p-3 text-white hover:from-pink-300 hover:via-purple-300 hover:to-indigo-300 hover:shadow-2xl disabled:from-pink-300 disabled:via-purple-300 disabled:to-indigo-300 disabled:shadow-2xl ${disabled ? "disabled:cursor-not-allowed" : "disabled:cursor-progress"}`}
+      className={`bg-pos-0 hover:bg-pos-100 flex flex-1 justify-center bg-opacity-100 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 p-3 text-white hover:from-pink-300 hover:via-purple-300 hover:to-indigo-300 hover:shadow-2xl disabled:from-pink-300 disabled:via-purple-300 disabled:to-indigo-300 disabled:shadow-2xl ${disabled && "disabled:cursor-not-allowed"}`}
       disabled={processing || redirecting || disabled}
     >
       <span className="text-lg font-bold lowercase tracking-wider">

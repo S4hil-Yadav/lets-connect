@@ -2,6 +2,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+export function useCreatePostMutation() {
+  return useMutation({
+    mutationFn: (post) => axios.put("/api/v1/posts/create-post", post),
+    onSuccess: () => toast.success("Posted"),
+    onError: (err) =>
+      toast.error(err.response.data.message || "Something went wrong"),
+  });
+}
+
 export function useLikePostMutation() {
   const queryClient = useQueryClient();
 
@@ -107,17 +116,71 @@ export function useUndislikePostMutation() {
       queryClient.setQueryData(["disliked-posts"], (dislikedPosts) =>
         dislikedPosts?.filter((dislikedPostId) => dislikedPostId !== postId),
       );
-      queryClient.setQueryData(["post", postId], (post) => ({
-        ...post,
-        dislikers: post.dislikers.filter(
-          (disliker) => disliker !== authUser._id,
-        ),
-      }));
+      queryClient.setQueryData(
+        ["post", postId],
+        (post) =>
+          post && {
+            ...post,
+            dislikers: post.dislikers.filter(
+              (disliker) => disliker !== authUser._id,
+            ),
+          },
+      );
     },
 
     onError: (err) => {
       if (err.response?.status !== 409)
         toast.error(err.response?.data.message || "Something went wrong");
+    },
+  });
+}
+
+export function useSavePostMutation() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
+  return useMutation({
+    mutationFn: (postId) => axios.post(`/api/v1/posts/${postId}/save-post`),
+    onSuccess: (_data, postId) => {
+      queryClient.setQueryData(
+        ["saved-posts", authUser?._id],
+        (prev) => prev && [postId, ...prev],
+      );
+    },
+  });
+}
+
+export function useUnsavePostMutation() {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
+  return useMutation({
+    mutationFn: (postId) => axios.delete(`/api/v1/posts/${postId}/unsave-post`),
+    onSuccess: (_data, postId) => {
+      queryClient.setQueryData(["saved-posts", authUser?._id], (prev) =>
+        prev?.filter((savedPostId) => savedPostId !== postId),
+      );
+    },
+  });
+}
+
+export function useDeletePostMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ postId }) =>
+      axios.delete(`/api/v1/posts/${postId}/delete-post`),
+    onSuccess: (_data, { postId, publisherId }) => {
+      queryClient.setQueryData(
+        ["user", publisherId],
+        (prev) =>
+          prev && {
+            ...prev,
+            posts: prev.posts.filter((post) => post !== postId),
+          },
+      );
+      queryClient.setQueryData(["post", postId], () => ({ deleted: true }));
+      toast.success("Post deleted");
     },
   });
 }
@@ -150,11 +213,46 @@ export function useSubmitCommentMutation() {
         (comments) => comments && [newComment, ...comments],
       );
     },
+  });
+}
 
-    // onError: (err) => {
-    //   toast.error(err.response?.data.message || "Something went wrong");
-    // },
+export function useEditCommentMutation() {
+  const queryClient = useQueryClient();
 
-    // throwOnError: true,
+  return useMutation({
+    mutationFn: ({ commentId, editedComment }) =>
+      axios.patch("/api/v1/posts/edit-comment/" + commentId, {
+        editedComment,
+      }),
+    onSuccess: (_data, { postId, commentId, editedComment }) => {
+      queryClient.setQueryData(["post", postId, "comments"], (comments) =>
+        comments?.map((comment) =>
+          comment._id === commentId
+            ? { ...comment, text: editedComment, edited: true }
+            : comment,
+        ),
+      );
+    },
+    onError: (err) =>
+      toast.error(err.response?.data.message || "Something went wrong"),
+  });
+}
+
+export function useDeleteCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ commentId, postId }) =>
+      axios.delete(`/api/v1/posts/${postId}/delete-comment/` + commentId),
+
+    onSuccess: (_data, { commentId, postId }) => {
+      queryClient.setQueryData(["post", postId, "comments"], (comments) =>
+        comments.filter((comment) => comment._id !== commentId),
+      );
+    },
+
+    onError: (err) => {
+      toast.error(err.response?.data.message || "Something went wrong");
+    },
   });
 }

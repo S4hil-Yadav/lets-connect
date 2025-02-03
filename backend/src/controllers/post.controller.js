@@ -8,7 +8,7 @@ import Comment from "../models/comment.model.js";
 export async function createPost(req, res, next) {
   try {
     const { title, body, images } = req.body,
-      publisher = await User.findById(req.user._id).select("followers");
+      publisher = await User.findById(req.user._id).select("followers").lean();
 
     if (!body.trim() && !images?.length) return next(errorHandler(400, "Post can't be empty"));
 
@@ -26,7 +26,7 @@ export async function createPost(req, res, next) {
       images: imagesURL,
     });
 
-    await publisher.updateOne({ $push: { posts: post._id } });
+    await User.findByIdAndUpdate(publisher._id, { $push: { posts: post._id } });
 
     publisher.followers.forEach(async followerId => {
       const notification = await Notification.create({
@@ -47,23 +47,6 @@ export async function createPost(req, res, next) {
   }
 }
 
-export async function deletePost(req, res, next) {
-  try {
-    const publisherId = req.user._id,
-      { postId } = req.params;
-
-    if (!(await Post.exists({ _id: postId }))) return next(errorHandler(404, "Post not found"));
-
-    await User.findByIdAndUpdate(publisherId, { $pull: { posts: postId } });
-    await Post.findByIdAndDelete(postId);
-
-    return res.status(204).end();
-  } catch (error) {
-    console.error(error.message);
-    return next(errorHandler(500, "Internal Server Error"));
-  }
-}
-
 export async function SearchPosts(req, res, next) {
   try {
     const { search } = req.query || "";
@@ -71,7 +54,8 @@ export async function SearchPosts(req, res, next) {
       $or: [{ title: { $regex: search, $options: "i" } }, { body: { $regex: search, $options: "i" } }],
     })
       .select("_id")
-      .limit(10);
+      .limit(10)
+      .lean();
 
     return res.status(200).json(posts);
   } catch (error) {
@@ -82,8 +66,8 @@ export async function SearchPosts(req, res, next) {
 
 export async function getAllPosts(_req, res, next) {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }).select("_id");
-    return res.status(200).json(posts);
+    const posts = await Post.find().sort({ createdAt: -1 }).select("_id deleted").lean();
+    return res.status(200).json(posts.flatMap(post => (post.deleted ? [] : [post._id])));
   } catch (error) {
     console.error(error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -92,12 +76,64 @@ export async function getAllPosts(_req, res, next) {
 
 export async function getPost(req, res, next) {
   try {
-    const post = await Post.findById(req.params.postId).populate({ path: "publisher", select: "username fullname profilePic" });
+    const post = await Post.findById(req.params.postId)
+      .populate({ path: "publisher", select: "username fullname profilePic" })
+      .lean();
     if (!post) return next(errorHandler(404, "Post not found"));
 
-    return res.status(200).json(post);
+    const { _id, deleted, createdAt, publisher } = post;
+    return res.status(200).json(post.deleted ? { _id, deleted, createdAt, publisher } : post);
   } catch (error) {
     console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function getSavedPosts(req, res, next) {
+  try {
+    const authUser = await User.findById(req.user._id)
+      .populate({
+        path: "savedPosts",
+        select: "_id deleted",
+        options: { sort: { createdAt: -1 } },
+      })
+      .lean();
+    return res.status(200).json(authUser.savedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function getLikedPosts(req, res, next) {
+  try {
+    const user = await User.findById(req.params.userId)
+      .populate({
+        path: "likedPosts",
+        select: "_id deleted",
+        options: { sort: { createdAt: -1 } },
+      })
+      .lean();
+    if (!user) return next(errorHandler(404, "User not found"));
+    return res.status(200).json(user.likedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+  } catch (error) {
+    console.error("Error in getFollowing controler : ", error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function getDislikedPosts(req, res, next) {
+  try {
+    const authUser = await User.findById(req.user._id)
+      .populate({
+        path: "dislikedPosts",
+        select: "_id deleted",
+        options: { sort: { createdAt: -1 } },
+      })
+      .lean();
+    return res.status(200).json(authUser.dislikedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+  } catch (error) {
+    console.error("Error in getFollowing controler : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
@@ -105,11 +141,11 @@ export async function getPost(req, res, next) {
 export async function likePost(req, res, next) {
   try {
     const likerId = req.user._id,
-      post = await Post.findById(req.params.postId).populate({ path: "publisher", select: "_id" }).select("_id publisher");
+      post = await Post.findById(req.params.postId).populate({ path: "publisher", select: "_id" }).select("_id publisher").lean();
 
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    await post.updateOne({ $pull: { dislikers: likerId }, $addToSet: { likers: likerId } });
+    await Post.findByIdAndUpdate(post._id, { $pull: { dislikers: likerId }, $addToSet: { likers: likerId } });
     await User.findByIdAndUpdate(likerId, { $pull: { dislikedPosts: post._id }, $addToSet: { likedPosts: post._id } });
 
     if (!post.publisher._id.equals(likerId)) {
@@ -135,9 +171,7 @@ export async function unlikePost(req, res, next) {
       { postId } = req.params,
       postExists = await Post.exists({ _id: postId });
 
-    if (!postExists) return next(errorHandler(404, "Post not found"));
-
-    await Post.findByIdAndUpdate(postId, { $pull: { likers: likerId } });
+    if (postExists) await Post.findByIdAndUpdate(postId, { $pull: { likers: likerId } });
     await User.findByIdAndUpdate(likerId, { $pull: { likedPosts: postId } });
 
     return res.status(204).end();
@@ -170,10 +204,44 @@ export async function undislikePost(req, res, next) {
       { postId } = req.params,
       postExists = await Post.exists({ _id: postId });
 
-    if (!postExists) return res.status(404).json({ message: "Post not found" });
+    if (postExists) await Post.findByIdAndUpdate(postId, { $pull: { dislikers: dislikerId } });
+    await User.findByIdAndUpdate(dislikerId, { $pull: { dislikedPosts: postId } });
 
-    await Post.findByIdAndUpdate(postId, { $pull: { dislikers: dislikerId } });
+    return res.status(204).end();
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
 
+export async function savePost(req, res, next) {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { $addToSet: { savedPosts: req.params.postId } });
+    return res.status(204).end();
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function deletePost(req, res, next) {
+  try {
+    const { postId } = req.params,
+      allowed = await Post.exists({ _id: postId, publisher: req.user._id });
+
+    if (!allowed) next(errorHandler(401, "Can't delete other's posts"));
+
+    await Post.findByIdAndUpdate(req.params.postId, { deleted: true });
+    return res.status(204).end();
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function unsavePost(req, res, next) {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { $pull: { savedPosts: req.params.postId } });
     return res.status(204).end();
   } catch (error) {
     console.error(error.message);
@@ -184,19 +252,75 @@ export async function undislikePost(req, res, next) {
 export async function submitComment(req, res, next) {
   try {
     const { postId } = req.params,
-      { comment: commentText } = req.body;
+      commentorId = req.user._id,
+      commentText = req.body.comment.trim();
 
-    if (!(await Post.exists({ _id: postId }))) return next(errorHandler(404, "Post not found"));
+    const post = await Post.findById(postId).select("publisher").lean();
+    if (!post) return next(errorHandler(404, "Post not found"));
 
-    if (!commentText.trim()) return next(errorHandler(422, "Comment can't be empty"));
+    if (!commentText) return next(errorHandler(422, "Comment can't be empty"));
 
     const newComment = await Comment.create({
-      commentor: req.user._id,
-      text: commentText.trim(),
+      commentor: commentorId,
+      text: commentText,
     });
 
+    if (!commentorId.equals(post.publisher)) {
+      const notification = await Notification.create({
+        sender: commentorId,
+        receiver: post.publisher,
+        type: "comment",
+        post: post._id,
+        comment: newComment._id,
+      });
+      await User.findByIdAndUpdate(post.publisher, { $push: { notifications: notification._id } });
+    }
+
     await Post.findByIdAndUpdate(postId, { $push: { comments: newComment._id } });
+    await User.findByIdAndUpdate(commentorId, { $push: { comments: newComment._id } });
+
     return res.status(201).json(newComment);
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function editComment(req, res, next) {
+  try {
+    const commentorId = req.user._id,
+      { commentId } = req.params;
+
+    const allowed = await Comment.exists({ _id: commentId, commentor: commentorId });
+    if (!allowed) return next(errorHandler(401, "Not allowed"));
+
+    await Comment.findByIdAndUpdate(commentId, {
+      text: req.body.editedComment,
+      edited: true,
+    });
+
+    return res.status(204).end();
+  } catch (error) {
+    console.error(error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function deleteComment(req, res, next) {
+  try {
+    const commentorId = req.user._id,
+      { postId, commentId } = req.params;
+
+    const allowed = await Comment.exists({ _id: commentId, commentor: commentorId });
+    if (!allowed) return next(errorHandler(401, "Not allowed"));
+
+    const postExists = await Post.exists({ _id: postId });
+    if (postExists) await Post.findByIdAndUpdate(postId, { $pull: { comments: commentId } });
+
+    await User.findByIdAndUpdate(commentorId, { $pull: { comments: commentId } });
+    await Comment.findByIdAndDelete(commentId);
+
+    return res.status(204).end();
   } catch (error) {
     console.error(error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -205,44 +329,21 @@ export async function submitComment(req, res, next) {
 
 export async function getComments(req, res, next) {
   try {
-    const post = await Post.findById(req.params.postId).populate({
-      path: "comments",
-      options: { sort: { createdAt: -1 } },
-      populate: {
-        path: "commentor",
-        select: "username fullname profilePic",
-      },
-    });
+    const post = await Post.findById(req.params.postId)
+      .populate({
+        path: "comments",
+        options: { sort: { createdAt: -1 } },
+        populate: {
+          path: "commentor",
+          select: "username fullname profilePic",
+        },
+      })
+      .lean();
 
     if (!post) return next(errorHandler(404, "Post not found"));
-
     return res.status(200).json(post.comments);
   } catch (error) {
     console.error(error.message);
-    return next(errorHandler(500, "Internal Server Error"));
-  }
-}
-
-export async function getLikedPosts(req, res, next) {
-  try {
-    const user = await User.findById(req.params.userId).select("likedPosts");
-
-    if (!user) return next(errorHandler(404, "User not found"));
-
-    return res.status(200).json(user.likedPosts);
-  } catch (error) {
-    console.error("Error in getFollowing controler : ", error.message);
-    return next(errorHandler(500, "Internal Server Error"));
-  }
-}
-
-export async function getDislikedPosts(req, res, next) {
-  try {
-    const { dislikedPosts } = await User.findById(req.user._id).select("dislikedPosts");
-
-    return res.status(200).json(dislikedPosts);
-  } catch (error) {
-    console.error("Error in getFollowing controler : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }

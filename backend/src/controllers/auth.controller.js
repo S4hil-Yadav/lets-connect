@@ -19,8 +19,8 @@ export async function signup(req, res, next) {
     if (password.length < 6) return next(errorHandler(422, "Minimun password length is 6"));
     if (password.length > 30) return next(errorHandler(422, "Maximum password length is 30"));
 
-    if (fullname.split(" ").length > 5 || !fullname.split(" ").every(part => part.length <= 20))
-      return next(errorHandler(422, "Only 5 words of max length 20 are allowed in full name"));
+    if (fullname.split(" ").length > 5 || fullname.length > 30)
+      return next(errorHandler(422, "Only 5 words and max length 30 is allowed"));
 
     if (await User.findOne({ email })) return next(errorHandler(409, "Email already exists"));
     if (await User.findOne({ username })) return next(errorHandler(409, "Username already exists"));
@@ -96,9 +96,9 @@ export async function updateUser(req, res, next) {
       fullname = req.body.fullname.trim(),
       newProfilePic = req.body.profilePic;
 
-    const { profilePic: prevProfilePic } = await User.findById(req.user._id).select("profilePic");
-
     if (!username || !fullname || !email.trim()) next(errorHandler(400, "All fields are required"));
+
+    const { profilePic: prevProfilePic } = await User.findById(req.user._id).select("profilePic");
 
     const uploadRes = newProfilePic && newProfilePic !== prevProfilePic ? await cloudinary.uploader.upload(newProfilePic) : null;
 
@@ -111,12 +111,22 @@ export async function updateUser(req, res, next) {
 
     if (prevProfilePic && prevProfilePic !== newProfilePic) {
       const publicId = prevProfilePic.split("/").pop().split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+      cloudinary.uploader.destroy(publicId);
     }
 
     return res.status(204).end();
   } catch (error) {
     console.error("Error in updateUser controller : ", error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function updateUserBio(req, res, next) {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { bio: req.body.bio.trim() });
+    return res.status(204).end();
+  } catch (error) {
+    console.error("Error in updateUserBio controller : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }

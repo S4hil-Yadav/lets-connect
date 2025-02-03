@@ -42,7 +42,7 @@ export default function Post({ postId, isModal = false }) {
       <PostHeader post={post} publisher={post.publisher} />
       <PostBody post={post} isModal={isModal} />
       <PostFooter post={post} />
-      {!isModal && <CommentInput />}
+      {!isModal && <CommentInput postId={postId} />}
     </li>
   );
 }

@@ -11,6 +11,7 @@ import {
   useUndislikePostMutation,
   useUnlikePostMutation,
 } from "@/lib/mutations/post.mutations";
+import AuthAlert from "../alerts/AuthAlert";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -36,26 +37,35 @@ function LikeButton({ post }) {
   const { mutate: handleUnlike, isPending: isPendingUnlike } =
     useUnlikePostMutation();
 
-  const liked = post.likers.includes(authUser?._id);
+  if (!authUser)
+    return (
+      <AuthAlert>
+        <div className="flex basis-1/2 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 px-2 py-1">
+          <MdOutlineThumbUp size={20} />
+          <span className="text-xs font-medium text-gray-600">
+            {post.likers.length}
+          </span>
+        </div>
+      </AuthAlert>
+    );
+
+  const liked = post.likers.includes(authUser._id);
 
   return (
     <button
       onClick={() => (liked ? handleUnlike(post._id) : handleLike(post._id))}
       disabled={isPendingLike || isPendingUnlike}
-      className="group flex basis-1/2 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 px-2 py-1 disabled:cursor-progress"
+      className="group flex basis-1/2 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 px-2 py-1 disabled:opacity-75"
     >
       {liked ? (
         <MdThumbUp
           size={20}
-          className="text-violet-700 group-disabled:cursor-progress"
+          className="text-violet-700 group-disabled:opacity-75"
         />
       ) : (
-        <MdOutlineThumbUp
-          size={20}
-          className="group-disabled:cursor-progress"
-        />
+        <MdOutlineThumbUp size={20} className="group-disabled:opacity-75" />
       )}
-      <span className="text-xs font-medium text-gray-600 group-disabled:cursor-progress">
+      <span className="text-xs font-medium text-gray-600 group-disabled:opacity-75">
         {post.likers.length}
       </span>
     </button>
@@ -70,26 +80,34 @@ function DislikeButton({ post }) {
   const { mutate: handleUndislike, isPending: isPendingUndislike } =
     useUndislikePostMutation();
 
-  const disliked = post.dislikers.includes(authUser?._id);
+  if (!authUser)
+    return (
+      <AuthAlert>
+        <div className="flex basis-1/2 items-center gap-1 rounded-r-lg border border-gray-300 px-2 py-1">
+          <MdOutlineThumbDown size={20} />
+          <span className="text-xs font-medium text-gray-600">
+            {post.dislikers.length}
+          </span>
+        </div>
+      </AuthAlert>
+    );
 
+  const disliked = post.dislikers.includes(authUser._id);
   return (
     <button
       onClick={() =>
         disliked ? handleUndislike(post._id) : handleDislike(post._id)
       }
       disabled={isPendingDislike || isPendingUndislike}
-      className="group flex basis-1/2 items-center gap-1 rounded-r-lg border border-gray-300 px-2 py-1 disabled:cursor-progress"
+      className="group flex basis-1/2 items-center gap-1 rounded-r-lg border border-gray-300 px-2 py-1 disabled:opacity-75"
     >
       {disliked ? (
         <MdThumbDown
           size={20}
-          className="text-violet-700 group-disabled:cursor-progress"
+          className="text-violet-700 group-disabled:opacity-75"
         />
       ) : (
-        <MdOutlineThumbDown
-          size={20}
-          className="group-disabled:cursor-progress"
-        />
+        <MdOutlineThumbDown size={20} className="group-disabled:opacity-75" />
       )}
       <span className="text-xs font-medium text-gray-600">
         {post.dislikers.length || 0}

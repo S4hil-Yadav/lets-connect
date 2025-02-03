@@ -79,7 +79,6 @@ function TitleInput({ draft }) {
         placeholder="Enter the title"
         value={draft.title}
         maxLength={300}
-        autoFocus
         onChange={handleTitleChange}
         onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
         className="resize-none overflow-hidden break-words rounded-lg border border-gray-400 bg-white p-2 text-lg font-semibold focus:border-gray-600"
@@ -105,7 +104,6 @@ function BodyInput({ draft }) {
       <textarea
         value={draft.body}
         placeholder="Enter the body"
-        autoFocus
         onChange={handleBodyChange}
         className="min-h-60 resize-none overflow-clip break-words bg-white p-2 font-medium"
       />

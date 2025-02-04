@@ -14,7 +14,7 @@ export default function SideNavbar() {
   const authUser = queryClient.getQueryData(["authUser"]);
 
   return (
-    <div className="sticky inset-0 flex border-t-2 border-gray-300 bg-gray-200 p-2 md:h-screen md:flex-col md:justify-between md:border-r-2 md:border-t-0">
+    <div className="sticky inset-0 flex border-t-2 border-gray-300 bg-gray-200 px-2 md:h-screen md:flex-col md:justify-between md:border-r-2 md:border-t-0">
       <div className="my-1 flex h-full w-full justify-around overflow-y-auto scrollbar md:flex-col md:justify-between">
         <LinkButton linkTo="home" Icon={HiOutlineHome} />
         <LinkButton linkTo="search" Icon={IoSearch} />
@@ -43,7 +43,7 @@ function LinkButton({ linkTo, Icon }) {
       <button
         className={`group relative flex w-full items-center gap-3 text-gray-600 transition-none hover:text-gray-800 md:py-2 md:pl-3 md:pr-4 ${location.pathname === "/" + linkTo && "text-violet-700 hover:text-violet-800"}`}
       >
-        <div className="relative">
+        <div className="relative py-1 md:py-0">
           {useMemo(
             () => linkTo === "notifications" && <NotificationPing />,
             [linkTo],
@@ -77,7 +77,7 @@ function NotificationPing() {
     (hasUnreadFollowRequest || hasUnreadNotification)
   )
     return (
-      <div className="absolute right-0 top-0 size-[0.35rem] animate-ping rounded-full bg-green-700" />
+      <div className="absolute right-0 top-1 size-[0.35rem] animate-ping rounded-full bg-green-700 md:top-0" />
     );
 
   return null;

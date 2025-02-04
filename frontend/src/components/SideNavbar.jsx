@@ -43,12 +43,12 @@ function LinkButton({ linkTo, Icon }) {
       <button
         className={`group relative flex w-full items-center gap-3 text-gray-600 transition-none hover:text-gray-800 md:py-2 md:pl-3 md:pr-4 ${location.pathname === "/" + linkTo && "text-violet-700 hover:text-violet-800"}`}
       >
-        <div className="relative py-1 md:py-0">
+        <div className="relative py-2 md:py-0">
           {useMemo(
             () => linkTo === "notifications" && <NotificationPing />,
             [linkTo],
           )}
-          {Icon && <Icon className="size-5 transition-none" />}
+          {Icon && <Icon size={20} className="transition-none" />}
         </div>
         <span className="hidden cursor-pointer font-semibold capitalize md:block">
           {linkTo.split("/")[0]}

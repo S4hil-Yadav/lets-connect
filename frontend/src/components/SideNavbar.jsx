@@ -7,6 +7,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetNotificationsQuery } from "@/lib/queries/notification.queries";
 import { useMemo } from "react";
+import { useGetFollowerRequestsQuery } from "@/lib/queries/user.queries";
 
 export default function SideNavbar() {
   const queryClient = useQueryClient();
@@ -60,10 +61,12 @@ function LinkButton({ linkTo, Icon }) {
 function NotificationPing() {
   const { data: notifications } = useGetNotificationsQuery(),
     location = useLocation();
+  const { data: followerRequests } = useGetFollowerRequestsQuery();
 
   if (
     location.pathname !== "/notifications" &&
-    notifications?.some((notification) => !notification.read)
+    (followerRequests ||
+      notifications?.some((notification) => !notification.read))
   )
     return (
       <div className="absolute right-0 top-0 size-[0.35rem] animate-ping rounded-full bg-green-700" />

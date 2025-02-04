@@ -14,8 +14,6 @@ export function useSignupMutation() {
       toast.success("Signup successful");
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
   });
 }
 export function useLoginMutation() {
@@ -27,8 +25,6 @@ export function useLoginMutation() {
       toast.success("Login successful");
       queryClient.invalidateQueries(["authUser"]);
     },
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
   });
 }
 
@@ -48,9 +44,6 @@ export function useUpdateUserMutation() {
 
       toast.success("Profile updated");
     },
-
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
   });
 }
 
@@ -69,9 +62,6 @@ export function useUpdateUserBioMutation() {
 
       toast.success("Profile updated");
     },
-
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
   });
 }
 

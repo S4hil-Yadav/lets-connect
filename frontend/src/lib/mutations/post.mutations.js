@@ -6,8 +6,6 @@ export function useCreatePostMutation() {
   return useMutation({
     mutationFn: (post) => axios.put("/api/v1/posts/create-post", post),
     onSuccess: () => toast.success("Posted"),
-    onError: (err) =>
-      toast.error(err.response.data.message || "Something went wrong"),
   });
 }
 
@@ -38,10 +36,6 @@ export function useLikePostMutation() {
         ),
       }));
     },
-    onError: (err) => {
-      if (err.response?.status !== 409)
-        toast.error(err.response?.data.message || "Something went wrong");
-    },
   });
 }
 
@@ -61,11 +55,6 @@ export function useUnlikePostMutation() {
         ...post,
         likers: post.likers.filter((likerId) => likerId !== authUser._id),
       }));
-    },
-
-    onError: (err) => {
-      if (err.response?.status !== 409)
-        toast.error(err.response?.data.message || "Something went wrong");
     },
   });
 }
@@ -95,11 +84,6 @@ export function useDislikePostMutation() {
         dislikers: [...post.dislikers, authUser._id],
       }));
     },
-
-    onError: (err) => {
-      if (err.response?.status !== 409)
-        toast.error(err.response?.data.message || "Something went wrong");
-    },
   });
 }
 
@@ -127,11 +111,6 @@ export function useUndislikePostMutation() {
           },
       );
     },
-
-    onError: (err) => {
-      if (err.response?.status !== 409)
-        toast.error(err.response?.data.message || "Something went wrong");
-    },
   });
 }
 
@@ -146,6 +125,7 @@ export function useSavePostMutation() {
         ["saved-posts", authUser?._id],
         (prev) => prev && [postId, ...prev],
       );
+      toast.success("Post saved");
     },
   });
 }
@@ -160,6 +140,7 @@ export function useUnsavePostMutation() {
       queryClient.setQueryData(["saved-posts", authUser?._id], (prev) =>
         prev?.filter((savedPostId) => savedPostId !== postId),
       );
+      toast.success("Post unsaved");
     },
   });
 }
@@ -233,8 +214,6 @@ export function useEditCommentMutation() {
         ),
       );
     },
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
   });
 }
 
@@ -249,10 +228,6 @@ export function useDeleteCommentMutation() {
       queryClient.setQueryData(["post", postId, "comments"], (comments) =>
         comments.filter((comment) => comment._id !== commentId),
       );
-    },
-
-    onError: (err) => {
-      toast.error(err.response?.data.message || "Something went wrong");
     },
   });
 }

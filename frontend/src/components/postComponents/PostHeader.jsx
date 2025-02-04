@@ -70,12 +70,12 @@ export default function PostHeader({ post, publisher }) {
           <BsThreeDotsVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="left" className="min-w-40">
-          <DropdownMenuItem asChild onClick={(e) => e.preventDefault()}>
+          <DropdownMenuItem asChild className="w-full">
             {!authUser ? (
               <span className="flex items-center gap-2">
                 <MdBookmarkBorder className="text-gray-600" />
                 <AuthAlert>
-                  <h1>Save</h1>
+                  <h1>Save Post</h1>
                 </AuthAlert>
               </span>
             ) : (

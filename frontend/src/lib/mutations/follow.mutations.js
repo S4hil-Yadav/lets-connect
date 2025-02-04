@@ -27,9 +27,6 @@ export function useHandleFollowerRequestMutation() {
           (followers) => followers && [...followers, sender],
         );
     },
-
-    onError: (err) =>
-      toast.error(err.response?.data.message || "Something went wrong"),
   });
 
   mutation.isAccepting = mutation.isPending && action === "accept";

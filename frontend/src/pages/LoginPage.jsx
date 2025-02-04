@@ -13,7 +13,10 @@ export default function LoginPage() {
   });
 
   function handleChange(e) {
-    setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
+    setUserFields({
+      ...userFields,
+      [e.target.id]: e.target.value.replace(/\s+/g, ""),
+    });
   }
 
   const { mutate: login, isPending, isSuccess } = useLoginMutation();

@@ -70,7 +70,11 @@ export default function PostHeader({ post, publisher }) {
           <BsThreeDotsVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="left" className="min-w-40">
-          <DropdownMenuItem asChild className="w-full">
+          <DropdownMenuItem
+            asChild
+            onClick={(e) => e.preventDefault()}
+            className="w-full"
+          >
             {!authUser ? (
               <span className="flex items-center gap-2">
                 <MdBookmarkBorder className="text-gray-600" />

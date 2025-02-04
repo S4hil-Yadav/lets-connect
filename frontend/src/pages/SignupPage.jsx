@@ -17,7 +17,13 @@ export default function SignupPage() {
   const inputs = useRef(null);
 
   function handleChange(e) {
-    setUserFields({ ...userFields, [e.target.id]: e.target.value.trim() });
+    setUserFields({
+      ...userFields,
+      [e.target.id]:
+        e.target.id === "fullname"
+          ? e.target.value.trimStart()
+          : e.target.value.replace(/\s+/g, ""),
+    });
   }
 
   const { mutate: signUp, isPending, isSuccess } = useSignupMutation();

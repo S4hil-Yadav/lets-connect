@@ -6,13 +6,12 @@ import cloudinary from "../lib/cloudinary.js";
 
 export async function signup(req, res, next) {
   try {
-    const email = req.body.email.trim().toLowerCase(),
-      username = req.body.username.trim(),
+    const email = req.body.email.trim().toLowerCase().replace(/\s+/g, ""),
+      username = req.body.username.trim().replace(/\s+/g, ""),
       fullname = req.body.fullname.trim(),
-      password = req.body.password.trim();
+      password = req.body.password.trim().replace(/\s+/g, "");
 
-    if (!email.trim() || !username.trim() || !fullname.trim() || !password.trim())
-      return next(errorHandler(422, "All fields are required"));
+    if (!email || !username || !fullname || !password) return next(errorHandler(422, "All fields are required"));
 
     if (!/.+@.+\..+/.test(email)) return next(errorHandler(422, "Invalid email address"));
     if (username.length > 20) return next(errorHandler(422, "Maximum username length is 20"));

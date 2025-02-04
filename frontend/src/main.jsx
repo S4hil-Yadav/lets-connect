@@ -25,7 +25,7 @@ createRoot(document.getElementById("root")).render(
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       <PersistGate persistor={persistor}>
         <Provider store={store}>
-          <Toaster position="bottom-right" />
+          <Toaster position="top-center" />
           <App />
         </Provider>
       </PersistGate>

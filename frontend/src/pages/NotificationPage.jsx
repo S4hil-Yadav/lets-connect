@@ -1,18 +1,41 @@
 import Avatar from "react-avatar";
 import moment from "moment";
 import FollowerRequestsDialog from "../components/notificationPageComponents/FollowerRequestsDialog";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGetNotificationsQuery } from "@/lib/queries/notification.queries";
 import { Link, useLocation } from "react-router-dom";
 import { ImSpinner2 } from "react-icons/im";
 import { MdErrorOutline } from "react-icons/md";
+import { useMarkNotificationsAsReadQuery } from "@/lib/mutations/notification.mutations";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NotificationPage() {
-  const {
-    data: notifications,
-    isLoading,
-    isError,
-  } = useGetNotificationsQuery();
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]),
+    { data: notifications, isLoading, isError } = useGetNotificationsQuery(),
+    { mutate: handleRead } = useMarkNotificationsAsReadQuery();
+
+  useEffect(
+    () => () => {
+      const unread = notifications?.flatMap((notification) =>
+        notification.read ? [] : [notification._id],
+      );
+
+      if (!unread?.length) return;
+
+      queryClient.setQueryData(
+        ["notifications", authUser?._id],
+        (notifications) =>
+          notifications?.map((notification) => ({
+            ...notification,
+            read: true,
+          })),
+      );
+
+      handleRead(unread);
+    },
+    [authUser?._id, handleRead, notifications, queryClient],
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-50 p-5 md:px-10">
@@ -92,7 +115,9 @@ function NotificationCard({ notification }) {
       : null;
 
   return (
-    <div className="relative flex w-full max-w-3xl items-center justify-between rounded-md bg-white px-3 py-3 shadow-md hover:bg-gray-100">
+    <div
+      className={`relative flex w-full max-w-3xl items-center justify-between rounded-md bg-white px-3 py-3 shadow-md hover:bg-gray-100 ${!notification.read && "border-2 border-red-300"}`}
+    >
       <div className="flex w-full gap-3">
         <Link
           to={navPath}

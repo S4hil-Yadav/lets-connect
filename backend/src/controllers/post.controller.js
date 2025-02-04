@@ -91,14 +91,14 @@ export async function getPost(req, res, next) {
 
 export async function getSavedPosts(req, res, next) {
   try {
-    const authUser = await User.findById(req.user._id)
+    const { savedPosts } = await User.findById(req.user._id)
       .populate({
         path: "savedPosts",
         select: "_id deleted",
         options: { sort: { createdAt: -1 } },
       })
       .lean();
-    return res.status(200).json(authUser.savedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+    return res.status(200).json(savedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
   } catch (error) {
     console.error(error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -107,15 +107,14 @@ export async function getSavedPosts(req, res, next) {
 
 export async function getLikedPosts(req, res, next) {
   try {
-    const user = await User.findById(req.params.userId)
+    const { likedPosts } = await User.findById(req.user._id)
       .populate({
         path: "likedPosts",
         select: "_id deleted",
         options: { sort: { createdAt: -1 } },
       })
       .lean();
-    if (!user) return next(errorHandler(404, "User not found"));
-    return res.status(200).json(user.likedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+    return res.status(200).json(likedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
   } catch (error) {
     console.error("Error in getFollowing controler : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -124,14 +123,14 @@ export async function getLikedPosts(req, res, next) {
 
 export async function getDislikedPosts(req, res, next) {
   try {
-    const authUser = await User.findById(req.user._id)
+    const { dislikedPosts } = await User.findById(req.user._id)
       .populate({
         path: "dislikedPosts",
         select: "_id deleted",
         options: { sort: { createdAt: -1 } },
       })
       .lean();
-    return res.status(200).json(authUser.dislikedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
+    return res.status(200).json(dislikedPosts.flatMap(post => (post.deleted ? [] : [post._id])));
   } catch (error) {
     console.error("Error in getFollowing controler : ", error.message);
     return next(errorHandler(500, "Internal Server Error"));
@@ -155,6 +154,7 @@ export async function likePost(req, res, next) {
         type: "postLike",
         post: post._id,
       });
+
       await User.findByIdAndUpdate(post.publisher._id, { $addToSet: { notifications: notification._id } });
     }
 

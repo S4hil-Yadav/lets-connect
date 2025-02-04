@@ -39,7 +39,7 @@ router.post("/:postId/submit-comment", protectRoute, submitComment);
 router.patch("/edit-comment/:commentId", protectRoute, editComment);
 router.delete("/:postId/delete-comment/:commentId", protectRoute, deleteComment);
 router.get("/:postId/get-comments", getComments);
-router.get("/get-liked-posts/:userId", getLikedPosts);
+router.get("/get-liked-posts", protectRoute, getLikedPosts);
 router.get("/get-disliked-posts", protectRoute, getDislikedPosts);
 
 export default router;

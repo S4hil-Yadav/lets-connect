@@ -21,6 +21,7 @@ import { ImSpinner2 } from "react-icons/im";
 
 export default function App() {
   const { isLoading, isSuccess } = useGetAuthQuery();
+
   const location = useLocation(),
     navLoc = location.state?.backgroundLocation
       ? location.state?.backgroundLocation.pathname

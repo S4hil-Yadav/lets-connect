@@ -5,6 +5,8 @@ import { MdNotificationsNone } from "react-icons/md";
 import { RiSettings4Line } from "react-icons/ri";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
+import { useGetNotificationsQuery } from "@/lib/queries/notification.queries";
+import { useMemo } from "react";
 
 export default function SideNavbar() {
   const queryClient = useQueryClient();
@@ -17,11 +19,6 @@ export default function SideNavbar() {
         <LinkButton linkTo="search" Icon={IoSearch} />
         <LinkButton linkTo="create" Icon={IoCreateOutline} />
         <LinkButton linkTo="notifications" Icon={MdNotificationsNone} />
-        {/* Icon={
-            authUser?.notifications?.some((notification) => !notification.read)
-              ? MdOutlineNotificationsActive
-              : MdNotificationsNone
-          } */}
         <div className="hidden md:block md:flex-grow" />
         <LinkButton linkTo="settings" Icon={RiSettings4Line} />
         <LinkButton
@@ -45,11 +42,32 @@ function LinkButton({ linkTo, Icon }) {
       <button
         className={`group relative flex w-full items-center gap-3 text-gray-600 transition-none hover:text-gray-800 md:py-2 md:pl-3 md:pr-4 ${location.pathname === "/" + linkTo && "text-violet-700 hover:text-violet-800"}`}
       >
-        {Icon && <Icon className="size-5 transition-none" />}
+        <div className="relative">
+          {useMemo(
+            () => linkTo === "notifications" && <NotificationPing />,
+            [linkTo],
+          )}
+          {Icon && <Icon className="size-5 transition-none" />}
+        </div>
         <span className="hidden cursor-pointer font-semibold capitalize md:block">
           {linkTo.split("/")[0]}
         </span>
       </button>
     </Link>
   );
+}
+
+function NotificationPing() {
+  const { data: notifications } = useGetNotificationsQuery(),
+    location = useLocation();
+
+  if (
+    location.pathname !== "/notifications" &&
+    notifications?.some((notification) => !notification.read)
+  )
+    return (
+      <div className="absolute right-0 top-0 size-[0.35rem] animate-ping rounded-full bg-green-700" />
+    );
+
+  return null;
 }

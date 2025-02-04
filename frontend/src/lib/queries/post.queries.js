@@ -51,11 +51,9 @@ export function useGetLikedPostsQuery() {
   const authUser = queryClient.getQueryData(["authUser"]);
 
   return useQuery({
-    queryKey: ["liked-posts", authUser._id],
+    queryKey: ["liked-posts", authUser?._id],
     queryFn: () =>
-      axios
-        .get("/api/v1/posts/get-liked-posts/" + authUser._id)
-        .then((res) => res.data),
+      axios.get("/api/v1/posts/get-liked-posts").then((res) => res.data),
     enabled: !!authUser,
   });
 }
@@ -65,7 +63,7 @@ export function useGetDislikedPostsQQuery() {
   const authUser = queryClient.getQueryData(["authUser"]);
 
   return useQuery({
-    queryKey: ["disliked-posts"],
+    queryKey: ["disliked-posts", authUser?._id],
     queryFn: () =>
       axios.get("/api/v1/posts/get-disliked-posts").then((res) => res.data),
     enabled: !!authUser,

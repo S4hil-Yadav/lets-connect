@@ -14,14 +14,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: [
-        "followRequestReceived",
-        "followRequestAccepted",
-        "post",
-        "postLike",
-        "comment",
-        "commentLike",
-      ],
+      enum: ["followRequestReceived", "followRequestAccepted", "post", "postLike", "comment", "commentLike"],
       required: true,
     },
     post: {
@@ -32,7 +25,7 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Comment",
     },
-    read: { type: Boolean, default: true },
+    read: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

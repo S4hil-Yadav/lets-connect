@@ -27,12 +27,28 @@ export function useHandleFollowerRequestMutation() {
           (followers) => followers && [...followers, sender],
         );
     },
+
+    onError: async (err) => {
+      queryClient.invalidateQueries({
+        queryKey: ["followers", authUser?._id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["follower-requests", authUser?._id],
+      });
+      toast.error(err.response?.data.message || "Something went wrong");
+    },
   });
 
   mutation.isAccepting = mutation.isPending && action === "accept";
   mutation.isRejecting = mutation.isPending && action === "reject";
 
   return mutation;
+}
+export function useReadAllFollowerRequestsMutation() {
+  return useMutation({
+    mutationFn: (followRequests) =>
+      axios.put("/api/v1/follow/read-all-follow-requests", followRequests),
+  });
 }
 
 export function useHandleFollowingMutation() {

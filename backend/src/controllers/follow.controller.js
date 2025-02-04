@@ -94,9 +94,9 @@ export async function acceptFollowRequest(req, res, next) {
 export async function rejectFollowRequest(req, res, next) {
   try {
     const followRequest = await FollowRequest.findById(req.params.id).select("sender receiver status");
-    if (!req.user._id.equals(followRequest.receiver)) return next(errorHandler(401, "Unauthorized"));
 
     if (followRequest?.status !== "pending") return next(errorHandler(404, "Follow request doesn't exist"));
+    if (!req.user._id.equals(followRequest.receiver)) return next(errorHandler(401, "Unauthorized"));
 
     await User.findByIdAndUpdate(followRequest.receiver, {
       $pull: { followerRequests: followRequest._id },
@@ -111,6 +111,16 @@ export async function rejectFollowRequest(req, res, next) {
     res.status(204).end();
   } catch (error) {
     console.error("Error in rejectFollowRequest controller", error.message);
+    return next(errorHandler(500, "Internal Server Error"));
+  }
+}
+
+export async function readAllFollowRequests(req, res, next) {
+  try {
+    await FollowRequest.updateMany({ _id: { $in: req.body } }, { $set: { read: true } });
+    return res.status(204).end();
+  } catch (error) {
+    console.error("Error in readAllFollowRequests controller", error.message);
     return next(errorHandler(500, "Internal Server Error"));
   }
 }
@@ -158,7 +168,7 @@ export async function getFollowerRequests(req, res, next) {
         {
           path: "followerRequests",
           options: { sort: { createdAt: -1 } },
-          select: "sender",
+          select: "sender read",
           populate: {
             path: "sender",
             select: "username fullname profilePic",

@@ -61,12 +61,20 @@ function LinkButton({ linkTo, Icon }) {
 function NotificationPing() {
   const { data: notifications } = useGetNotificationsQuery(),
     location = useLocation();
-  const { data: followerRequests } = useGetFollowerRequestsQuery();
+  const { data: followRequests } = useGetFollowerRequestsQuery();
+
+  const hasUnreadFollowRequest = useMemo(
+    () => followRequests?.some((req) => !req.read),
+    [followRequests],
+  );
+  const hasUnreadNotification = useMemo(
+    () => notifications?.some((notification) => !notification.read),
+    [notifications],
+  );
 
   if (
     location.pathname !== "/notifications" &&
-    (followerRequests ||
-      notifications?.some((notification) => !notification.read))
+    (hasUnreadFollowRequest || hasUnreadNotification)
   )
     return (
       <div className="absolute right-0 top-0 size-[0.35rem] animate-ping rounded-full bg-green-700" />

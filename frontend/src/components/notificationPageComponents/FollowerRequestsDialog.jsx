@@ -12,9 +12,15 @@ import {
 import { Link } from "react-router-dom";
 import Avatar from "react-avatar";
 import { ImSpinner3 } from "react-icons/im";
-import { useMemo } from "react";
-import { useHandleFollowerRequestMutation } from "@/lib/mutations/follow.mutations";
+import {
+  useHandleFollowerRequestMutation,
+  useReadAllFollowerRequestsMutation,
+} from "@/lib/mutations/follow.mutations";
 import { useGetFollowerRequestsQuery } from "@/lib/queries/user.queries";
+import { MdErrorOutline } from "react-icons/md";
+import FollowRequestSkeleton from "./FollowRequestSkeleton";
+import { useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function FollowerRequestsDialog() {
   const {
@@ -23,12 +29,20 @@ export default function FollowerRequestsDialog() {
     isError,
   } = useGetFollowerRequestsQuery();
 
+  console.log(followRequests);
+  const hasUnread = useMemo(
+    () => followRequests?.some((req) => !req.read),
+    [followRequests],
+  );
+
   return (
     <Dialog>
       {followRequests?.length ? (
         <DialogTrigger asChild>
           <button className="relative mb-8 flex items-center gap-2 rounded-md border-2 border-gray-400 bg-gray-200 bg-opacity-50 px-3 py-3 shadow-sm md:mx-5">
-            <div className="absolute right-2 top-2 size-[6px] animate-ping rounded-full bg-green-500 shadow-sm shadow-green-300" />
+            {hasUnread && (
+              <div className="absolute right-2 top-2 size-[6px] animate-ping rounded-full bg-green-500 shadow-sm shadow-green-300" />
+            )}
             <TbUsersPlus size={30} className="text-purple-900" />
             <p className="mx-auto text-sm font-medium text-red-800 md:text-base">
               You have&nbsp;
@@ -43,42 +57,69 @@ export default function FollowerRequestsDialog() {
           </button>
         </DialogTrigger>
       ) : null}
-      {useMemo(
-        () => (
-          <DialogContent
-            aria-describedby={undefined}
-            className="max-h-[70%] w-auto min-w-80 max-w-lg rounded-md p-3 md:min-w-96"
-          >
-            <DialogHeader>
-              <DialogTitle className="pr-5 text-center text-xl font-bold capitalize">
-                Follow Requests
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col gap-2">
-              <Senders
-                followRequests={followRequests}
-                isLoading={isLoading}
-                isError={isError}
-              />
-            </div>
-          </DialogContent>
-        ),
-        [followRequests, isError, isLoading],
-      )}
+      <DialogContent
+        aria-describedby={undefined}
+        className="max-h-[70%] w-auto min-w-80 max-w-lg rounded-md p-3 md:min-w-96"
+      >
+        <DialogHeader>
+          <DialogTitle className="pr-5 text-center text-xl font-bold capitalize">
+            Follow Requests
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          <Senders
+            followRequests={followRequests}
+            isLoading={isLoading}
+            isError={isError}
+          />
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }
 
 function Senders({ followRequests, isLoading, isError }) {
-  if (isLoading) return <>Loading Follow Requests</>;
-  if (isError) return <>Failed to load Follow Requests</>;
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+  const { mutate: handleRead } = useReadAllFollowerRequestsMutation();
+
+  useEffect(
+    () => () => {
+      const unread = followRequests?.flatMap((req) =>
+        req.read ? [] : [req._id],
+      );
+
+      if (!unread?.length) return;
+
+      queryClient.setQueryData(
+        ["follower-requests", authUser?._id],
+        (followRequests) =>
+          followRequests?.map((req) => ({
+            ...req,
+            read: true,
+          })),
+      );
+
+      handleRead(unread);
+    },
+    [authUser?._id, followRequests, handleRead, queryClient],
+  );
+
+  if (isLoading) return <FollowRequestSkeleton />;
+  if (isError)
+    return (
+      <span className="mt-10 flex w-full justify-center gap-3 text-lg font-medium">
+        Couldn&apos;t load follow requests
+        <MdErrorOutline size={25} color="red" />
+      </span>
+    );
 
   return (
     <ul className="flex flex-col gap-2">
-      {followRequests?.map((req) => (
+      {followRequests.map((req) => (
         <li
           key={req.sender._id}
-          className="user-card flex items-center justify-between rounded-lg border-b border-dashed border-slate-400 last:border-none"
+          className={`user-card flex items-center justify-between rounded-lg ${!req.read && "border-2 border-red-300"}`}
         >
           <DialogClose asChild>
             <Link
@@ -118,7 +159,7 @@ function SenderRequestHandleButtons({ reqId, sender }) {
   return (
     <div className="mr-2 flex w-20 justify-center">
       <button
-        className="flex flex-1 items-center justify-center disabled:cursor-default"
+        className="flex flex-1 items-center justify-center disabled:opacity-75"
         onClick={() => handleRequest({ action: "reject", sender, reqId })}
         disabled={isAccepting || isRejecting}
       >

@@ -17,6 +17,7 @@ const followRequestSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
+    read: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

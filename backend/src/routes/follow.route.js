@@ -8,6 +8,7 @@ import {
   unfollow,
   getFollowerRequests,
   getFollowingRequests,
+  readAllFollowRequests,
 } from "../controllers/follow.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
@@ -17,6 +18,7 @@ router.post("/send-follow-request/:id", protectRoute, sendFollowRequest);
 router.post("/accept-follow-request/:id", protectRoute, acceptFollowRequest);
 router.delete("/reject-follow-request/:id", protectRoute, rejectFollowRequest);
 router.delete("/cancel-follow-request/:id", protectRoute, cancelFollowRequest);
+router.put("/read-all-follow-requests", protectRoute, readAllFollowRequests);
 router.delete("/remove-follower/:id", protectRoute, removeFollower);
 router.delete("/unfollow/:id", protectRoute, unfollow);
 router.get("/get-follower-requests", protectRoute, getFollowerRequests);

@@ -35,7 +35,13 @@ export default function EditProfile() {
   const [changed, setChanged] = useState(false);
 
   function handleChange(e) {
-    setUserFields({ ...userFields, [e.target.id]: e.target.value.trimStart() });
+    setUserFields({
+      ...userFields,
+      [e.target.id]:
+        e.target.id === "fullname"
+          ? e.target.value.trimStart()
+          : e.target.value.replace(/\s+/g, ""),
+    });
     setChanged(true);
   }
 

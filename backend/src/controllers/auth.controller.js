@@ -6,7 +6,7 @@ import cloudinary from "../lib/cloudinary.js";
 
 export async function signup(req, res, next) {
   try {
-    const email = req.body.email.trim().toLowerCase().replace(/\s+/g, ""),
+    const email = req.body.email.toLowerCase().replace(/\s+/g, ""),
       username = req.body.username.trim().replace(/\s+/g, ""),
       fullname = req.body.fullname.trim(),
       password = req.body.password.trim().replace(/\s+/g, "");
@@ -90,10 +90,10 @@ export async function getAuthUser(req, res, next) {
 
 export async function updateUser(req, res, next) {
   try {
-    const email = req.body.email.trim().toLowerCase(),
-      username = req.body.username.trim(),
+    const email = req.body.email.toLowerCase().replace(/\s+/g, ""),
+      username = req.body.username.replace(/\s+/g, ""),
       fullname = req.body.fullname.trim(),
-      newProfilePic = req.body.profilePic;
+      newProfilePic = req.body.profilePic.replace(/\s+/g, "");
 
     if (!username || !fullname || !email.trim()) next(errorHandler(400, "All fields are required"));
 

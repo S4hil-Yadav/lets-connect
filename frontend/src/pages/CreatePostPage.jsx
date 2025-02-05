@@ -4,18 +4,18 @@ import { FiMinusCircle } from "react-icons/fi";
 import { CgSpinnerTwo } from "react-icons/cg";
 import { useCreatePostMutation } from "@/lib/mutations/post.mutations";
 import { useDispatch, useSelector } from "react-redux";
-import { setDraft, clearDraft } from "@/redux/draft/draftSlice";
+import { setDraft, clearDraft, setPosting } from "@/redux/draft/draftSlice";
 import BigCarousel from "@/components/postComponents/BigCarousel";
 import { useRef, useState } from "react";
 
 export default function CreatePostPage() {
   const dispatch = useDispatch(),
-    { draft } = useSelector((state) => state.draft);
+    { draft, posting } = useSelector((state) => state.draft);
 
   const imgDialogRef = useRef(null),
     [imgIdx, setImgIdx] = useState(0);
 
-  const { mutateAsync: createPost, isPending } = useCreatePostMutation();
+  const { mutateAsync: createPost } = useCreatePostMutation();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -23,6 +23,7 @@ export default function CreatePostPage() {
       if (!draft.body.trim() && !draft.images.length)
         throw new Error("Post can't be empty");
 
+      dispatch(setPosting());
       await createPost(draft);
       dispatch(clearDraft());
     } catch (error) {
@@ -36,20 +37,21 @@ export default function CreatePostPage() {
         Create Post
       </span>
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
-        <TitleInput draft={draft} />
-        <BodyInput draft={draft} />
+        <TitleInput draft={draft} disabled={posting} />
+        <BodyInput draft={draft} disabled={posting} />
         <ImageInput
           draft={draft}
           setImgIdx={setImgIdx}
           imgDialogRef={imgDialogRef}
+          disabled={posting}
         />
         <button
           className="flex items-center gap-2 self-center rounded-lg bg-violet-400 px-5 py-2 text-xl font-medium text-white shadow-md hover:bg-violet-300 disabled:bg-violet-300"
           type="submit"
-          disabled={isPending}
+          disabled={posting}
         >
-          {isPending ? "processing..." : "Post"}
-          {isPending && <CgSpinnerTwo className="size-5 animate-spin" />}
+          {posting ? "processing..." : "Post"}
+          {posting && <CgSpinnerTwo className="size-5 animate-spin" />}
         </button>
       </form>
       <BigCarousel
@@ -62,7 +64,7 @@ export default function CreatePostPage() {
   );
 }
 
-function TitleInput({ draft }) {
+function TitleInput({ draft, disabled }) {
   const dispatch = useDispatch();
 
   return (
@@ -72,6 +74,7 @@ function TitleInput({ draft }) {
         placeholder="Enter the title"
         value={draft.title}
         maxLength={300}
+        disabled={disabled}
         onChange={(e) =>
           dispatch(
             setDraft({
@@ -90,7 +93,7 @@ function TitleInput({ draft }) {
   );
 }
 
-function BodyInput({ draft }) {
+function BodyInput({ draft, disabled }) {
   const dispatch = useDispatch();
 
   return (
@@ -99,6 +102,7 @@ function BodyInput({ draft }) {
       <textarea
         value={draft.body}
         placeholder="Enter the body"
+        disabled={disabled}
         onChange={(e) => dispatch(setDraft({ ...draft, body: e.target.value }))}
         className="min-h-60 resize-none overflow-clip break-words bg-white p-2 font-medium"
       />
@@ -107,7 +111,7 @@ function BodyInput({ draft }) {
   );
 }
 
-function ImageInput({ draft, setImgIdx, imgDialogRef }) {
+function ImageInput({ draft, disabled, setImgIdx, imgDialogRef }) {
   const dispatch = useDispatch();
 
   async function handleImageUpload(e) {
@@ -167,6 +171,7 @@ function ImageInput({ draft, setImgIdx, imgDialogRef }) {
           type="file"
           accept="image/*"
           onInput={handleImageUpload}
+          disabled={disabled}
           hidden
         />
       </label>

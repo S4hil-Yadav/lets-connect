@@ -22,6 +22,7 @@ export function useGetPostsQuery() {
     queryKey: ["posts", authUser?._id],
     queryFn: () =>
       axios.get("/api/v1/posts/get-all-posts").then((res) => res.data),
+    staleTime: 0,
   });
 }
 

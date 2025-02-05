@@ -228,6 +228,7 @@ export function useDeleteCommentMutation() {
       queryClient.setQueryData(["post", postId, "comments"], (comments) =>
         comments.filter((comment) => comment._id !== commentId),
       );
+      toast.success("Comment deleted");
     },
   });
 }

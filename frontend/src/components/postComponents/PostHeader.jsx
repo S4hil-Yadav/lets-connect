@@ -23,16 +23,23 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import DeletePostAlert from "../alerts/DeletePostAlert";
 import AuthAlert from "../alerts/AuthAlert";
+import { ImSpinner2 } from "react-icons/im";
 
-export default function PostHeader({ post, publisher }) {
+export default function PostHeader({
+  post,
+  publisher,
+  handleDeletePost,
+  loading,
+}) {
   const queryClient = useQueryClient(),
     authUser = queryClient.getQueryData(["authUser"]);
 
   const { mutate: handleSavePost, isPending: isPendingSave } =
-    useSavePostMutation();
-  const { mutate: handleUnsavePost, isPending: isPendingUnsave } =
-    useUnsavePostMutation();
-  const { data: savedPosts, isLoading, isError } = useGetSavedPostsQuery();
+      useSavePostMutation(),
+    { mutate: handleUnsavePost, isPending: isPendingUnsave } =
+      useUnsavePostMutation(),
+    { data: savedPosts, isLoading, isError } = useGetSavedPostsQuery();
+
   const postSaved = savedPosts?.includes(post._id);
 
   return (
@@ -65,73 +72,78 @@ export default function PostHeader({ post, publisher }) {
         </div>
       </Link>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <BsThreeDotsVertical />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="left" className="min-w-40">
-          <DropdownMenuItem
-            asChild
-            onClick={(e) => e.preventDefault()}
-            className="w-full"
-          >
-            {!authUser ? (
-              <span className="flex items-center gap-2">
-                <MdBookmarkBorder className="text-gray-600" />
-                <AuthAlert>
-                  <h1>Save Post</h1>
-                </AuthAlert>
-              </span>
+      {loading ? (
+        <ImSpinner2 className="size-5 animate-spin text-violet-700" />
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <BsThreeDotsVertical />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="left" className="min-w-40">
+            <DropdownMenuItem
+              asChild
+              onClick={(e) => e.preventDefault()}
+              className="w-full"
+            >
+              {!authUser ? (
+                <span className="flex items-center gap-2">
+                  <MdBookmarkBorder className="text-gray-600" />
+                  <AuthAlert>
+                    <h1>Save Post</h1>
+                  </AuthAlert>
+                </span>
+              ) : (
+                <button
+                  disabled={
+                    isLoading || isError || isPendingSave || isPendingUnsave
+                  }
+                  onClick={() =>
+                    postSaved
+                      ? handleUnsavePost(post._id)
+                      : handleSavePost(post._id)
+                  }
+                >
+                  {postSaved ? (
+                    <MdBookmark className="text-gray-600" />
+                  ) : (
+                    <MdBookmarkBorder />
+                  )}
+                  {postSaved ? "Unsave Post" : "Save Post"}
+                </button>
+              )}
+            </DropdownMenuItem>
+            {publisher._id === authUser?._id ? (
+              <>
+                <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+                  <span className="flex w-full items-center gap-2">
+                    <MdDeleteOutline size={20} className="text-red-800" />
+                    <DeletePostAlert
+                      postId={post._id}
+                      publisherId={publisher._id}
+                      handleDeletePost={handleDeletePost}
+                    />
+                  </span>
+                </DropdownMenuItem>
+              </>
             ) : (
-              <button
-                disabled={
-                  isLoading || isError || isPendingSave || isPendingUnsave
-                }
-                onClick={() =>
-                  postSaved
-                    ? handleUnsavePost(post._id)
-                    : handleSavePost(post._id)
-                }
-              >
-                {postSaved ? (
-                  <MdBookmark className="text-gray-600" />
-                ) : (
-                  <MdBookmarkBorder />
-                )}
-                {postSaved ? "Unsave Post" : "Save Post"}
-              </button>
+              <>
+                <DropdownMenuItem>
+                  <span className="flex w-full items-center gap-2">
+                    <MdOutlineReport size={20} className="text-red-800" />
+                    Report User
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span className="flex w-full items-center gap-2">
+                    <MdOutlineBlock size={20} className="text-red-800" />
+                    Block User
+                  </span>
+                </DropdownMenuItem>
+              </>
             )}
-          </DropdownMenuItem>
-          {publisher._id === authUser?._id ? (
-            <>
-              <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                <span className="flex w-full items-center gap-2">
-                  <MdDeleteOutline size={20} className="text-red-800" />
-                  <DeletePostAlert
-                    postId={post._id}
-                    publisherId={publisher._id}
-                  />
-                </span>
-              </DropdownMenuItem>
-            </>
-          ) : (
-            <>
-              <DropdownMenuItem>
-                <span className="flex w-full items-center gap-2">
-                  <MdOutlineReport size={20} className="text-red-800" />
-                  Report User
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span className="flex w-full items-center gap-2">
-                  <MdOutlineBlock size={20} className="text-red-800" />
-                  Block User
-                </span>
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

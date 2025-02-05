@@ -9,11 +9,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useDeletePostMutation } from "@/lib/mutations/post.mutations";
 
-export default function DeletePostAlert({ postId, publisherId }) {
-  const { mutate: handleDeletePost, isPending } = useDeletePostMutation();
-
+export default function DeletePostAlert({
+  postId,
+  publisherId,
+  handleDeletePost,
+}) {
   return (
     <AlertDialog>
       <AlertDialogTrigger>Delete Post</AlertDialogTrigger>
@@ -33,7 +34,6 @@ export default function DeletePostAlert({ postId, publisherId }) {
           <AlertDialogAction asChild>
             <button
               onClick={() => handleDeletePost({ postId, publisherId })}
-              disabled={isPending}
               className="rounded-lg bg-red-500 capitalize text-white hover:bg-red-400"
             >
               Delete

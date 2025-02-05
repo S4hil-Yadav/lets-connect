@@ -29,7 +29,6 @@ export default function FollowerRequestsDialog() {
     isError,
   } = useGetFollowerRequestsQuery();
 
-  console.log(followRequests);
   const hasUnread = useMemo(
     () => followRequests?.some((req) => !req.read),
     [followRequests],

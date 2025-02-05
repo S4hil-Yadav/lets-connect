@@ -40,6 +40,18 @@ export default function TextWithExpand({ originalText, minHeight = 5 }) {
             >
               {word}
             </Link>
+          ) : word.endsWith(".com") || word.endsWith(".in") ? (
+            <a
+              href={
+                word.startsWith("http://") || word.startsWith("https://")
+                  ? word
+                  : `https://${word}`
+              }
+              target="_blank"
+              className="text-blue-600 hover:underline"
+            >
+              {word}
+            </a>
           ) : (
             word
           ),

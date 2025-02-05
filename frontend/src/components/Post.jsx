@@ -5,15 +5,17 @@ import PostBody from "./postComponents/PostBody";
 import PostFooter from "./postComponents/PostFooter";
 import CommentInput from "./postComponents/CommentInput";
 import { MdErrorOutline } from "react-icons/md";
+import { useDeletePostMutation } from "@/lib/mutations/post.mutations";
 
 export default function Post({ postId, isModal = false }) {
   const {
-    data: post,
-    isLoading,
-    isFetching,
-    refetch,
-    isError,
-  } = useGetPostQuery(postId);
+      data: post,
+      isLoading,
+      isFetching,
+      refetch,
+      isError,
+    } = useGetPostQuery(postId),
+    { mutate: handleDeletePost, isPending } = useDeletePostMutation();
 
   if (isLoading || (isModal && isFetching)) return <PostSkeleton />;
 
@@ -35,9 +37,14 @@ export default function Post({ postId, isModal = false }) {
 
   return (
     <li
-      className={`flex w-full flex-col border-t-2 border-gray-300 px-3 pt-4 first-of-type:border-t-0 ${!isModal && "md:max-w-lg"}`}
+      className={`flex w-full flex-col border-t-2 border-gray-300 px-3 pt-4 first-of-type:border-t-0 ${!isModal && "md:max-w-lg"} ${isPending && "opacity-75"}`}
     >
-      <PostHeader post={post} publisher={post.publisher} />
+      <PostHeader
+        post={post}
+        publisher={post.publisher}
+        handleDeletePost={handleDeletePost}
+        loading={isPending}
+      />
       <PostBody post={post} isModal={isModal} />
       <PostFooter post={post} />
       {!isModal && <CommentInput postId={postId} />}

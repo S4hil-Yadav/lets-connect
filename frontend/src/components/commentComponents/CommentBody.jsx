@@ -96,11 +96,7 @@ export default function CommentBody({ postId, comment }) {
           <textarea
             ref={editCommentRef}
             defaultValue={comment.text}
-            onChange={(e) => {
-              e.target.style.height = "auto";
-              e.target.style.height = `${e.target.scrollHeight}px`;
-            }}
-            className="resize-none text-wrap break-words bg-transparent text-justify"
+            className="resize-none text-wrap break-words bg-transparent text-justify text-sm"
           />
         ) : (
           <TextWithExpand originalText={comment.text} minHeight={4.5} />

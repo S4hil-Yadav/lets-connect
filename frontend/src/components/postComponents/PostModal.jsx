@@ -31,6 +31,7 @@ export default function PostModal() {
     >
       <DialogContent
         aria-describedby={undefined}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         className="max-w-screen max-h-screen overflow-y-auto scrollbar-none md:max-h-[calc(90vh)] md:max-w-[calc(83vw)] lg:max-w-[calc(80vw)]"
       >
         <DialogHeader className="hidden">

@@ -16,7 +16,7 @@ export default function PostBody({ post }) {
   return (
     <div className="flex w-full flex-col">
       <div className="flex w-full flex-col gap-1 text-wrap break-words pb-5 pt-3 text-justify">
-        <span className="text-lg font-bold">{post.title}</span>
+        <span className="text-lg font-semibold">{post.title}</span>
         <TextWithExpand originalText={post.body} minHeight={4.5} />
       </div>
       <BigCarousel

@@ -18,7 +18,7 @@ export default function TextWithExpand({ originalText, minHeight = 4.5 }) {
       <pre
         ref={commentRef}
         onClick={() => showButton && setExpanded(true)}
-        className={`overflow-clip text-wrap font-exo ${!showButton || expanded ? "h-fit" : `h-[4.5rem]`}`}
+        className={`overflow-clip text-wrap font-exo text-sm ${!showButton || expanded ? "h-fit" : `h-[4.5rem]`}`}
       >
         {originalText}
       </pre>

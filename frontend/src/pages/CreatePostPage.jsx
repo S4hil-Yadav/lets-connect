@@ -65,13 +65,6 @@ export default function CreatePostPage() {
 function TitleInput({ draft }) {
   const dispatch = useDispatch();
 
-  function handleTitleChange(e) {
-    e.target.value = e.target.value.replace(/[\r\n]+/g, " ");
-    dispatch(setDraft({ ...draft, title: e.target.value }));
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
-  }
-
   return (
     <div className="flex flex-col">
       <textarea
@@ -79,9 +72,16 @@ function TitleInput({ draft }) {
         placeholder="Enter the title"
         value={draft.title}
         maxLength={300}
-        onChange={handleTitleChange}
+        onChange={(e) =>
+          dispatch(
+            setDraft({
+              ...draft,
+              title: e.target.value.replace(/[\r\n]+/g, " "),
+            }),
+          )
+        }
         onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-        className="resize-none overflow-hidden break-words rounded-lg border border-gray-400 bg-white p-2 text-lg font-semibold focus:border-gray-600"
+        className="resize-none overflow-hidden break-words rounded-lg border border-gray-400 bg-white p-2 text-lg font-semibold placeholder:font-medium focus:border-gray-600"
       />
       <label htmlFor="title-input" className="mr-1 mt-1 flex self-end">
         <span className="align-top text-xs">{draft.title.length}/300</span>
@@ -93,18 +93,13 @@ function TitleInput({ draft }) {
 function BodyInput({ draft }) {
   const dispatch = useDispatch();
 
-  function handleBodyChange(e) {
-    dispatch(setDraft({ ...draft, body: e.target.value }));
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
-  }
   return (
     <div className="flex flex-col overflow-clip rounded-lg border border-gray-400 bg-white has-[>textarea:focus]:border-gray-600">
       <span className="bg-gray-white hidden border p-2 align-top text-xs"></span>
       <textarea
         value={draft.body}
         placeholder="Enter the body"
-        onChange={handleBodyChange}
+        onChange={(e) => dispatch(setDraft({ ...draft, body: e.target.value }))}
         className="min-h-60 resize-none overflow-clip break-words bg-white p-2 font-medium"
       />
       <label className="flex self-end bg-teal-200"></label>

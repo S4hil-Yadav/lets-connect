@@ -15,12 +15,6 @@ export default function CommentInput({ postId }) {
 
   const inputRef = useRef();
 
-  function handleCommentChange(e) {
-    setComment(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
-  }
-
   async function handleCommentSubmit(e) {
     e.preventDefault();
     try {
@@ -39,7 +33,7 @@ export default function CommentInput({ postId }) {
     >
       <textarea
         ref={inputRef}
-        onChange={handleCommentChange}
+        onChange={(e) => setComment(e.target.value)}
         placeholder="Write a comment..."
         value={comment}
         className="max-h-40 w-full resize-none bg-gray-200 scrollbar-thin"

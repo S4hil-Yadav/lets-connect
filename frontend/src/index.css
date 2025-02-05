@@ -137,6 +137,9 @@
   * {
     @apply border-border;
   }
+  textarea {
+    field-sizing: content;
+  }
   body {
     @apply bg-background text-foreground;
   }

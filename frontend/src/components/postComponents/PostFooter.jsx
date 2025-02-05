@@ -139,7 +139,7 @@ function ShareButton({ postId }) {
       onClick={() =>
         navigator.clipboard
           .writeText(window.location.origin + "/post/" + postId)
-          .then(() => toast.success("Post link copied to clipboard!"))
+          .then(() => toast.success("Post url copied to clipboard"))
           .catch(() => toast.error("Failed to copy URL"))
       }
       className="flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-2 py-1"

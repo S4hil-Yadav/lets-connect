@@ -56,12 +56,17 @@ export default function ProfilePage() {
                 onClick={() =>
                   navigator.clipboard
                     .writeText(window.location.origin + "/profile/" + userId)
-                    .then(() => toast.success("Post link copied to clipboard!"))
+                    .then(() =>
+                      toast.success("Profile url copied to clipboard"),
+                    )
                     .catch(() => toast.error("Failed to copy URL"))
                 }
               >
                 <span className="flex w-full items-center gap-2 font-medium text-gray-700">
-                  <MdOutlineLink size={20} className="text-blue-800" />
+                  <MdOutlineLink
+                    size={15}
+                    className="scale-125 text-blue-800"
+                  />
                   Copy profile link
                 </span>
               </DropdownMenuItem>
@@ -240,7 +245,8 @@ export default function ProfilePage() {
               <div className="flex gap-1">
                 <MdSave
                   onClick={async () => {
-                    await handleUpdateBio(bioRef.current.value);
+                    if (bioRef.current.value !== user.bio)
+                      await handleUpdateBio(bioRef.current.value);
                     setEditBio(false);
                   }}
                   className="cursor-pointer text-violet-700 hover:text-violet-500"
@@ -256,8 +262,8 @@ export default function ProfilePage() {
                   setEditBio(true);
                   setTimeout(() => {
                     bioRef.current.focus();
-                    bioRef.current.style.height = "auto";
-                    bioRef.current.style.height = `${bioRef.current.scrollHeight}px`;
+                    bioRef.current.selectionStart =
+                      bioRef.current.selectionEnd = bioRef.current.value.length;
                   });
                 }}
                 className="cursor-pointer hover:text-gray-500"
@@ -269,18 +275,14 @@ export default function ProfilePage() {
           ) : isError ? (
             ""
           ) : user._id !== authUser?._id || !editBio ? (
-            <pre className="max-h-40 w-full resize-none text-wrap break-words px-2 text-justify font-exo text-sm">
+            <pre className="max-h-40 w-full text-wrap break-words px-2 pb-2 text-justify font-exo text-sm">
               {user.bio}
             </pre>
           ) : (
             <textarea
               ref={bioRef}
               defaultValue={user.bio}
-              onChange={(e) => {
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-              }}
-              className="w-full resize-none text-wrap break-words bg-gray-100 px-2 pb-2 text-justify text-sm"
+              className="w-full resize-none bg-gray-100 px-2 text-justify text-sm"
             />
           )}
         </div>

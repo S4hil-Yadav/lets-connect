@@ -35,6 +35,11 @@ export function Input({ value, onChange, field, autoFocus }) {
           placeholder={"Enter your " + field}
           id={field.replace(/ /g, "")}
           onChange={onChange}
+          onKeyDown={(e) =>
+            field.replace(/ /g, "") !== "fullname" &&
+            (e.key === "Enter" || e.key === " ") &&
+            e.preventDefault()
+          }
           autoFocus={autoFocus}
           required
         />

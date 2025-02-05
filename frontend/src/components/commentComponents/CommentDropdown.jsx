@@ -41,8 +41,9 @@ export default function CommentDropdown({
                 setEditComment(true);
                 setTimeout(() => {
                   editCommentRef.current.focus();
-                  editCommentRef.current.style.height = "auto";
-                  editCommentRef.current.style.height = `${editCommentRef.current.scrollHeight}px`;
+                  editCommentRef.current.selectionStart =
+                    editCommentRef.current.selectionEnd =
+                      editCommentRef.current.value.length;
                 });
               }}
             >

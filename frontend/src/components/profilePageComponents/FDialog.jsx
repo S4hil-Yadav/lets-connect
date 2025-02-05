@@ -14,6 +14,7 @@ import {
   useRemoveFollowerMutation,
 } from "@/lib/mutations/follow.mutations";
 import ConfirmationAlert from "../alerts/ConfirmationAlert";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function FDialog({ userId, type, count, children }) {
   return (
@@ -81,6 +82,9 @@ export function HandleFollowButton({
   authFollowingSet,
   followingRequestReceiverMap,
 }) {
+  const queryClient = useQueryClient(),
+    authUser = queryClient.getQueryData(["authUser"]);
+
   const { mutate: handleFollowingRequest, isPending } =
     useHandleFollowingMutation();
 
@@ -96,6 +100,10 @@ export function HandleFollowButton({
     <div className="flex h-8 w-20 items-center justify-center rounded-lg bg-violet-300 font-medium text-white md:text-base">
       {isPending ? (
         <ImSpinner3 className="size-5 animate-spin" />
+      ) : authUser?._id === receiver._id ? (
+        <button className="h-full flex-1 cursor-default rounded-lg bg-violet-400 text-center">
+          You
+        </button>
       ) : action === "send" || action === "cancel" ? (
         <button
           onClick={() => handleFollowingRequest({ action, receiver, reqId })}

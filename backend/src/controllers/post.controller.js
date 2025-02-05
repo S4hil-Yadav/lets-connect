@@ -53,6 +53,7 @@ export async function SearchPosts(req, res, next) {
     const posts = await Post.find({
       $or: [{ title: { $regex: search, $options: "i" } }, { body: { $regex: search, $options: "i" } }],
     })
+      .sort({ createdAt: -1 })
       .select("_id")
       .limit(10)
       .lean();

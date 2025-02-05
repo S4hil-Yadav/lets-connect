@@ -32,11 +32,12 @@ export default function PostBody({ post }) {
             <CarouselItem key={i}>
               <img
                 src={image}
+                loading="lazy"
                 onClick={() => {
                   setImgIdx(i);
                   imgDialogRef.current.showModal();
                 }}
-                className="mx-auto h-40 select-none border-2 border-gray-200"
+                className="mx-auto aspect-square h-60 w-full select-none border-2 border-gray-200 object-cover md:aspect-[4/3]"
               />
             </CarouselItem>
           ))}

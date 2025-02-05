@@ -62,35 +62,23 @@ export function Input({ value, onChange, field, autoFocus }) {
   );
 }
 
-export function SearchInput({ onSearchChange }) {
+export function SearchInput({ onSearchChange, value }) {
   return (
     <div className="sticky flex w-full justify-center">
       <div className="flex w-fit flex-col items-start overflow-clip rounded-lg border-b-2 shadow-sm has-[>div>input:focus]:border-gray-400 hover:border-gray-400">
-        {/* <label><span className="text-sm font-bold capitalize text-gray-400">Search</span></label> */}
         <div className="flex w-full items-center bg-gray-100">
           <input
-            className="flex w-full bg-gray-100 p-2.5 font-semibold text-slate-600 placeholder:font-exo placeholder:font-normal placeholder:tracking-normal focus:outline-none"
             placeholder="Search"
+            defaultValue={value}
             onChange={onSearchChange}
             required
+            className="flex w-full bg-gray-100 p-2.5 font-semibold text-slate-600 placeholder:font-exo placeholder:font-normal placeholder:tracking-normal focus:outline-none"
           />
           <label className="mr-3 cursor-pointer text-gray-500">
             <IoSearch size={20} />
           </label>
         </div>
       </div>
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger className="px-2">
-          <FaSort className="text-gray-600" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="right" className="min-w-40">
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Share post</DropdownMenuItem>
-          <DropdownMenuItem>Report user</DropdownMenuItem>
-          <DropdownMenuItem>Block user</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu> */}
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { MdExpandMore } from "react-icons/md";
+import { Link } from "react-router-dom";
 
-export default function TextWithExpand({ originalText, minHeight = 4.5 }) {
+export default function TextWithExpand({ originalText, minHeight = 5 }) {
   const [showButton, setShowButton] = useState(false);
   const commentRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
@@ -20,7 +21,29 @@ export default function TextWithExpand({ originalText, minHeight = 4.5 }) {
         onClick={() => showButton && setExpanded(true)}
         className={`overflow-clip text-wrap font-exo text-sm ${!showButton || expanded ? "h-fit" : `h-[4.5rem]`}`}
       >
-        {originalText}
+        {originalText.split(/(\s+)/).map((word, index) =>
+          word.startsWith("#") ? (
+            <Link
+              key={index}
+              to="/search"
+              state={{ search: "posts", searchParam: word }}
+              className="text-blue-600 hover:underline"
+            >
+              {word}
+            </Link>
+          ) : word.startsWith("@") ? (
+            <Link
+              key={index}
+              to="/search"
+              state={{ search: "users", searchParam: word }}
+              className="text-blue-600 hover:underline"
+            >
+              {word}
+            </Link>
+          ) : (
+            word
+          ),
+        )}
       </pre>
       {showButton && (
         <button

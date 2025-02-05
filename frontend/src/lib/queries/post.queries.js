@@ -6,7 +6,7 @@ export function useSearchPostsQuery(text) {
     queryKey: ["search-posts", text?.toLowerCase()],
     queryFn: () =>
       axios
-        .get("/api/v1/posts/search-posts?search=" + text)
+        .get("/api/v1/posts/search-posts?search=" + encodeURIComponent(text))
         .then((res) => res.data),
     initialData: [],
     staleTime: 0,

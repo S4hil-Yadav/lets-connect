@@ -7,11 +7,13 @@ import Avatar from "react-avatar";
 import { ImSpinner2 } from "react-icons/im";
 import { LuSearchX } from "react-icons/lu";
 import { MdErrorOutline } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function SearchPage() {
-  const [type, setType] = useState("users"),
-    [text, setText] = useState(""),
+  const location = useLocation();
+
+  const [type, setType] = useState(location.state?.search || "users"),
+    [text, setText] = useState(location.state?.searchParam || ""),
     timeoutRef = useRef(null);
 
   const {
@@ -36,7 +38,7 @@ export default function SearchPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-3 px-0 py-5 md:px-10">
-      <SearchInput onSearchChange={handleChange} />
+      <SearchInput value={text} onSearchChange={handleChange} />
       <hr className="mt-3 h-[2px] w-full bg-gray-400 px-0" />
       <div className="flex w-full gap-6 px-5 text-center text-lg font-semibold text-gray-600">
         <button

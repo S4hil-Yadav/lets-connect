@@ -6,7 +6,10 @@ export function useSearchUsersQuery(text) {
     queryKey: ["search-users", text?.toLowerCase()],
     queryFn: () =>
       axios
-        .get("/api/v1/users/search-users?search=" + text)
+        .get(
+          "/api/v1/users/search-users?search=" +
+            encodeURIComponent(text.startsWith("@") ? text.substring(1) : text),
+        )
         .then((res) => res.data),
     initialData: [],
     staleTime: 0,

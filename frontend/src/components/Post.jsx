@@ -16,6 +16,7 @@ export default function Post({ postId, isModal = false }) {
   } = useGetPostQuery(postId);
 
   if (isLoading || (isModal && isFetching)) return <PostSkeleton />;
+
   if (isError)
     return (
       <span className="flex items-center gap-3 self-center text-lg font-medium">
@@ -31,9 +32,6 @@ export default function Post({ postId, isModal = false }) {
     );
 
   if (post.deleted) return null;
-  // <span className="w-full max-w-sm rounded-lg bg-gray-200 py-2 text-center text-lg font-medium text-red-700">
-  //   This post has been deleted
-  // </span>
 
   return (
     <li

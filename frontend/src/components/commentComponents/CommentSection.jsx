@@ -41,6 +41,7 @@ export default function CommentSection({ postId, setCommentsOpen }) {
   }, [authUser, comments]);
 
   if (isFetching) return <CommentSkeleton count={3} />;
+
   if (isError)
     return (
       <span className="flex items-center gap-3 self-center text-lg font-medium">

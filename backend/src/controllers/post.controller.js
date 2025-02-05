@@ -290,15 +290,17 @@ export async function submitComment(req, res, next) {
 export async function editComment(req, res, next) {
   try {
     const commentorId = req.user._id,
-      { commentId } = req.params;
+      { commentId } = req.params,
+      editedComment = req.body.editedComment.trim();
 
     const allowed = await Comment.exists({ _id: commentId, commentor: commentorId });
     if (!allowed) return next(errorHandler(401, "Not allowed"));
 
-    await Comment.findByIdAndUpdate(commentId, {
-      text: req.body.editedComment,
-      edited: true,
-    });
+    if (editedComment)
+      await Comment.findByIdAndUpdate(commentId, {
+        text: editedComment,
+        edited: true,
+      });
 
     return res.status(204).end();
   } catch (error) {

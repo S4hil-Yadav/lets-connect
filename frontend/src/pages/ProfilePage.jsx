@@ -245,8 +245,10 @@ export default function ProfilePage() {
               <div className="flex gap-1">
                 <MdSave
                   onClick={async () => {
-                    if (bioRef.current.value !== user.bio)
-                      await handleUpdateBio(bioRef.current.value);
+                    const editedBio = bioRef.current.value.trim();
+                    console.log(editedBio !== user.bio);
+                    if (editedBio !== user.bio)
+                      await handleUpdateBio(editedBio);
                     setEditBio(false);
                   }}
                   className="cursor-pointer text-violet-700 hover:text-violet-500"

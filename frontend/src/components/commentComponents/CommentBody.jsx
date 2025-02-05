@@ -67,11 +67,12 @@ export default function CommentBody({ postId, comment }) {
             <div className="flex gap-1">
               <MdSave
                 onClick={async () => {
-                  if (editCommentRef.current.value !== comment.text)
+                  const editedComment = editCommentRef.current.value.trim();
+                  if (editedComment !== comment.text && editedComment)
                     await handleEditComment({
                       postId,
                       commentId: comment._id,
-                      editedComment: editCommentRef.current.value,
+                      editedComment: editedComment,
                     });
                   setEditComment(false);
                 }}

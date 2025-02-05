@@ -130,10 +130,6 @@ export async function updateUserBio(req, res, next) {
   }
 }
 
-// export async function deleteUser(req, res, next) {
-//   const user = await User.findById(req.user._id);
-// }
-
 // Development
 export async function checkAuth(req, res, next) {
   try {

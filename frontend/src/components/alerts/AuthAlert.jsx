@@ -16,9 +16,7 @@ import { Link } from "react-router-dom";
 export default function AuthAlert({ children }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger className="w-full text-left">
-        {children}
-      </AlertDialogTrigger>
+      <AlertDialogTrigger className="text-left">{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle asChild>
@@ -55,14 +53,10 @@ export function LogOutAlert() {
 
   return (
     <AlertDialog>
-      {isPending ? (
-        <MdLogout className="cursor-progress text-gray-600" size={25} />
-      ) : (
-        <AlertDialogTrigger className="flex w-full items-center gap-2">
-          <MdLogout size={15} className="text-red-700" />
-          <span>Logout</span>
-        </AlertDialogTrigger>
-      )}
+      <AlertDialogTrigger className="flex w-full items-center gap-2">
+        <MdLogout size={15} className="text-red-700" />
+        <span>Logout</span>
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle asChild>

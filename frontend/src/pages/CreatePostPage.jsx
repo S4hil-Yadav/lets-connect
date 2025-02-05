@@ -139,7 +139,7 @@ function ImageInput({ draft, setImgIdx, imgDialogRef }) {
               setImgIdx(i);
               imgDialogRef.current.showModal();
             }}
-            className="mx-auto size-fit h-20 rounded-md border object-contain shadow-lg"
+            className="aspect-square rounded-md border object-cover shadow-lg"
           />
           <FiMinusCircle
             onClick={() =>

@@ -39,7 +39,7 @@ export default function BigCarousel({ dialogRef, images, imgIdx, setImgIdx }) {
           />
           <img src={images[imgIdx]} className="max-h-[90vh] max-w-[80vw]" />
           {images.length > 1 && (
-            <span className="absolute bottom-0 left-[50%] -translate-x-1/2 select-none rounded-lg bg-black px-2 py-1 text-white opacity-50">
+            <span className="absolute bottom-0 left-[50%] mb-2 -translate-x-1/2 select-none rounded-lg border border-white bg-black px-2 py-1 text-white opacity-75">
               {imgIdx + 1} / {images.length}
             </span>
           )}

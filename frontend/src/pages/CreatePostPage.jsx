@@ -1,33 +1,42 @@
 import toast from "react-hot-toast";
-import { FaRegPlusSquare } from "react-icons/fa";
 import { FiMinusCircle } from "react-icons/fi";
-import { CgSpinnerTwo } from "react-icons/cg";
+import { ImSpinner2 } from "react-icons/im";
 import { useCreatePostMutation } from "@/lib/mutations/post.mutations";
 import { useDispatch, useSelector } from "react-redux";
 import { setDraft, clearDraft, setPosting } from "@/redux/draft/draftSlice";
 import BigCarousel from "@/components/postComponents/BigCarousel";
 import { useRef, useState } from "react";
+import {
+  MdOutlineAddPhotoAlternate,
+  MdOutlineVideoLibrary,
+} from "react-icons/md";
 
 export default function CreatePostPage() {
   const dispatch = useDispatch(),
     { draft, posting } = useSelector((state) => state.draft);
 
-  const imgDialogRef = useRef(null),
-    [imgIdx, setImgIdx] = useState(0);
+  const imgDialogRef = useRef(null);
+
+  const [imgIdx, setImgIdx] = useState(0),
+    [video, setVideo] = useState(null);
 
   const { mutateAsync: createPost } = useCreatePostMutation();
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      if (!draft.body.trim() && !draft.images.length)
+      if (!draft.body.trim() && !draft.images.length && !video)
         throw new Error("Post can't be empty");
 
       dispatch(setPosting());
-      await createPost(draft);
-      dispatch(clearDraft());
+      const formData = new FormData();
+      formData.append("post", JSON.stringify(draft));
+      formData.append("video", video);
+      await createPost(formData);
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      dispatch(clearDraft());
     }
   }
 
@@ -39,10 +48,12 @@ export default function CreatePostPage() {
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
         <TitleInput draft={draft} disabled={posting} />
         <BodyInput draft={draft} disabled={posting} />
-        <ImageInput
+        <MediaInput
           draft={draft}
           setImgIdx={setImgIdx}
           imgDialogRef={imgDialogRef}
+          video={video}
+          setVideo={setVideo}
           disabled={posting}
         />
         <button
@@ -51,7 +62,7 @@ export default function CreatePostPage() {
           disabled={posting}
         >
           {posting ? "processing..." : "Post"}
-          {posting && <CgSpinnerTwo className="size-5 animate-spin" />}
+          {posting && <ImSpinner2 className="size-5 animate-spin" />}
         </button>
       </form>
       <BigCarousel
@@ -111,16 +122,23 @@ function BodyInput({ draft, disabled }) {
   );
 }
 
-function ImageInput({ draft, disabled, setImgIdx, imgDialogRef }) {
+function MediaInput({
+  draft,
+  disabled,
+  setImgIdx,
+  imgDialogRef,
+  video,
+  setVideo,
+}) {
   const dispatch = useDispatch();
 
   async function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const image = e.target.files[0];
+    if (!image) return;
 
     const reader = new FileReader();
 
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(image);
 
     reader.onload = () =>
       dispatch(
@@ -158,10 +176,25 @@ function ImageInput({ draft, disabled, setImgIdx, imgDialogRef }) {
           />
         </div>
       ))}
-      <label className="cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200">
+      {video && (
+        <div className="relative mx-auto">
+          <video controls className="max-h-60">
+            <source src={URL.createObjectURL(video)} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <FiMinusCircle
+            size={30}
+            onClick={() => setVideo(null)}
+            className="absolute right-0 top-0 cursor-pointer rounded-full text-red-600 hover:text-red-500"
+          />
+        </div>
+      )}
+      <label
+        className={`h-fit cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200 ${video && "hidden"}`}
+      >
         <div className="flex size-20 flex-col items-center justify-center gap-1">
-          <FaRegPlusSquare size={25} />
-          <span className="cursor-pointer text-xs font-semibold leading-none">
+          <MdOutlineAddPhotoAlternate size={20} />
+          <span className="mt-1 cursor-pointer text-center text-xs font-semibold leading-none">
             add an
             <br />
             image
@@ -175,6 +208,31 @@ function ImageInput({ draft, disabled, setImgIdx, imgDialogRef }) {
           hidden
         />
       </label>
+      {!video && !draft.images.length && (
+        <>
+          <div className="flex h-20 items-center">or</div>
+          <label className="h-fit cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200">
+            <div className="flex size-20 flex-col items-center justify-center gap-1">
+              <MdOutlineVideoLibrary size={20} />
+              <span className="mt-1 cursor-pointer text-center text-xs font-semibold leading-none">
+                add a
+                <br />
+                video
+              </span>
+            </div>
+            <input
+              type="file"
+              accept="video/*"
+              onInput={(e) => {
+                setVideo(e.target.files[0]);
+                e.target.value = [];
+              }}
+              disabled={disabled}
+              hidden
+            />
+          </label>
+        </>
+      )}
     </div>
   );
 }

@@ -7,23 +7,28 @@ import Comment from "../models/comment.model.js";
 
 export async function createPost(req, res, next) {
   try {
-    const { title, body, images } = req.body,
+    const { title, body, images } = JSON.parse(req.body.post),
+      video = req.file,
       publisher = await User.findById(req.user._id).select("followers").lean();
 
-    if (!body.trim() && !images?.length) return next(errorHandler(400, "Post can't be empty"));
+    if (!body.trim() && !images?.length && !video) return next(errorHandler(400, "Post can't be empty"));
+    if (images?.length && video) return next(errorHandler(400, "Can't post both photos and video"));
 
     const imagesURL = [];
 
     for (const image of images) {
-      const cloudinaryRes = await cloudinary.uploader.upload(image);
-      imagesURL.push(cloudinaryRes.secure_url);
+      const cloudinaryImgRes = await cloudinary.uploader.upload(image);
+      imagesURL.push(cloudinaryImgRes.secure_url);
     }
+
+    const cloudinaryVideoRes = video ? await cloudinary.uploader.upload(video.path, { resource_type: "video" }) : null;
 
     const post = await Post.create({
       publisher: publisher._id,
       title: title.trim(),
       body: body.trim(),
       images: imagesURL,
+      video: cloudinaryVideoRes?.url || "",
     });
 
     await User.findByIdAndUpdate(publisher._id, { $push: { posts: post._id } });

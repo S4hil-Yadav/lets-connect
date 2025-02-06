@@ -28,19 +28,26 @@ export default function PostBody({ post }) {
 
       <Carousel className="flex w-full justify-center">
         <CarouselContent>
-          {post.images.map((image, i) => (
-            <CarouselItem key={i}>
-              <img
-                src={image}
-                loading="lazy"
-                onClick={() => {
-                  setImgIdx(i);
-                  imgDialogRef.current.showModal();
-                }}
-                className="mx-auto aspect-square h-60 w-full select-none border-2 border-gray-200 object-cover md:aspect-[4/3]"
-              />
-            </CarouselItem>
-          ))}
+          {post.video ? (
+            <video controls className="max-h-96">
+              <source src={post.video} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            post.images.map((image, i) => (
+              <CarouselItem key={i}>
+                <img
+                  src={image}
+                  loading="lazy"
+                  onClick={() => {
+                    setImgIdx(i);
+                    imgDialogRef.current.showModal();
+                  }}
+                  className="mx-auto aspect-square h-60 w-full select-none border-2 border-gray-200 object-cover md:aspect-[4/3]"
+                />
+              </CarouselItem>
+            ))
+          )}
         </CarouselContent>
         {post.images.length > 1 && (
           <>

@@ -6,6 +6,8 @@ import {
 import FDialog, { FDialogContent, HandleFollowButton } from "./FDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import AuthAlert from "../alerts/AuthAlert";
+import { MdErrorOutline } from "react-icons/md";
+import UserCardSkeleton from "./UserCardSkeleton";
 
 export default function FollowingDialog({ userId }) {
   const queryClient = useQueryClient();
@@ -40,11 +42,14 @@ export default function FollowingDialog({ userId }) {
   return (
     <FDialog userId={userId} type="following" count={followings?.length}>
       {isLoading ? (
-        "Loading followings"
+        <UserCardSkeleton />
       ) : isError ? (
-        "Error in loading followings"
-      ) : !followings?.length ? (
-        userId === authUser?._id ? (
+        <span className="flex w-full justify-center gap-3 text-lg font-medium">
+          Couldn&apos;t load followings
+          <MdErrorOutline size={25} />
+        </span>
+      ) : followings?.length ? (
+        userId !== authUser?._id ? (
           "You don't follow anyone"
         ) : (
           "This user doesn't follow anyone"

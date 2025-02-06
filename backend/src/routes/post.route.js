@@ -1,4 +1,6 @@
 import express from "express";
+import upload from "../lib/multer.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 import {
   createPost,
   deleteComment,
@@ -19,11 +21,10 @@ import {
   unlikePost,
   unsavePost,
 } from "../controllers/post.controller.js";
-import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.put("/create-post", protectRoute, createPost);
+router.post("/create-post", protectRoute, upload.single("video"), createPost);
 router.get("/search-posts", SearchPosts);
 router.get("/get-all-posts", getAllPosts);
 router.get("/:postId/get-post", getPost);

@@ -93,7 +93,7 @@ export async function updateUser(req, res, next) {
     const email = req.body.email.toLowerCase().replace(/\s+/g, ""),
       username = req.body.username.replace(/\s+/g, ""),
       fullname = req.body.fullname.trim(),
-      newProfilePic = req.body.profilePic.replace(/\s+/g, "");
+      newProfilePic = req.body.profilePic;
 
     if (!username || !fullname || !email.trim()) next(errorHandler(400, "All fields are required"));
 

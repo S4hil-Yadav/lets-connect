@@ -4,7 +4,12 @@ import toast from "react-hot-toast";
 
 export function useCreatePostMutation() {
   return useMutation({
-    mutationFn: (post) => axios.put("/api/v1/posts/create-post", post),
+    mutationFn: (post) =>
+      axios.post("/api/v1/posts/create-post", post, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }),
     onSuccess: () => toast.success("Posted"),
   });
 }

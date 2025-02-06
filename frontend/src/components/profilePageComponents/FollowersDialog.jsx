@@ -10,6 +10,8 @@ import FDialog, {
 } from "./FDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import AuthAlert from "../alerts/AuthAlert";
+import UserCardSkeleton from "./UserCardSkeleton";
+import { MdErrorOutline } from "react-icons/md";
 
 export default function FollowersDialog({ userId }) {
   const queryClient = useQueryClient();
@@ -42,9 +44,12 @@ export default function FollowersDialog({ userId }) {
   return (
     <FDialog userId={userId} type="follower" count={followers?.length}>
       {isLoading ? (
-        "Loading followers..."
+        <UserCardSkeleton />
       ) : isError ? (
-        "Could not load followers..."
+        <span className="flex w-full justify-center gap-3 text-lg font-medium">
+          Couldn&apos;t load followers
+          <MdErrorOutline size={25} />
+        </span>
       ) : !followers?.length ? (
         userId === authUser?._id ? (
           "You don't have any follower"

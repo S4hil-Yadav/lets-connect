@@ -7,19 +7,16 @@ const draftSlice = createSlice({
     posting: false,
   },
   reducers: {
-    setDraft: (state, action) => {
-      state.draft = action.payload;
-    },
-    clearDraft: (state) => {
-      state.draft = { title: "", body: "", images: [] };
-      state.posting = false;
-    },
-    setPosting: (state) => {
-      state.posting = true;
-    },
-    clearPosting: (state) => {
-      state.posting = false;
-    },
+    setDraft: (state, action) => ({ ...state, draft: action.payload }),
+
+    clearDraft: () => ({
+      draft: { title: "", body: "", images: [] },
+      posting: false,
+    }),
+
+    setPosting: (state) => ({ ...state, posting: true }),
+
+    clearPosting: (state) => ({ ...state, posting: false }),
   },
 });
 

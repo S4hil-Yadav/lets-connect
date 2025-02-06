@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema(
     title: { type: String, maxlength: 300 },
     body: String,
     images: [String],
+    video: [String],
     likers: [user],
     dislikers: [user],
     comments: [comment],

@@ -4,31 +4,33 @@ import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import Comment from "../models/comment.model.js";
+import { extractPublicId } from "cloudinary-build-url";
 
 export async function createPost(req, res, next) {
   try {
-    const { title, body, images } = JSON.parse(req.body.post),
-      video = req.file,
+    const { title, body } = JSON.parse(req.body.post),
+      files = req.files,
       publisher = await User.findById(req.user._id).select("followers").lean();
 
-    if (!body.trim() && !images?.length && !video) return next(errorHandler(400, "Post can't be empty"));
-    if (images?.length && video) return next(errorHandler(400, "Can't post both photos and video"));
+    if (!title.body && !body.trim() && !files.length) return next(errorHandler(400, "Post can't be empty"));
 
-    const imagesURL = [];
+    const media = [];
 
-    for (const image of images) {
-      const cloudinaryImgRes = await cloudinary.uploader.upload(image);
-      imagesURL.push(cloudinaryImgRes.secure_url);
+    for (const file of files) {
+      if (file.mimetype.startsWith("image/")) {
+        const cloudinaryRes = await cloudinary.uploader.upload(file.path);
+        media.push({ media: { type: "image" }, url: cloudinaryRes.secure_url });
+      } else if (file.mimetype.startsWith("video/")) {
+        const cloudinaryRes = await cloudinary.uploader.upload(file.path, { resource_type: "video" });
+        media.push({ media: { type: "video" }, url: cloudinaryRes.secure_url });
+      }
     }
-
-    const cloudinaryVideoRes = video ? await cloudinary.uploader.upload(video.path, { resource_type: "video" }) : null;
 
     const post = await Post.create({
       publisher: publisher._id,
       title: title.trim(),
       body: body.trim(),
-      images: imagesURL,
-      video: cloudinaryVideoRes?.url || "",
+      media,
     });
 
     await User.findByIdAndUpdate(publisher._id, { $push: { posts: post._id } });
@@ -86,6 +88,16 @@ export async function getPost(req, res, next) {
       .populate({ path: "publisher", select: "username fullname profilePic" })
       .lean();
     if (!post) return next(errorHandler(404, "Post not found"));
+
+    post.media.forEach(
+      file =>
+        file.media.type === "video" &&
+        (file.media.thumbnail = cloudinary
+          .image(extractPublicId(file.url) + ".jpg", { resource_type: "video" })
+          .match(/src=['"]([^'"]+)['"]/)[1])
+    );
+
+    console.error(post.media);
 
     const { _id, deleted, createdAt, publisher } = post;
     return res.status(200).json(post.deleted ? { _id, deleted, createdAt, publisher } : post);

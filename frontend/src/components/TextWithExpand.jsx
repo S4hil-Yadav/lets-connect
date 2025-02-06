@@ -9,7 +9,7 @@ export default function TextWithExpand({ originalText, minHeight = 5 }) {
 
   useEffect(() => {
     setTimeout(
-      () => setShowButton(commentRef.current.offsetHeight > 16 * minHeight),
+      () => setShowButton(commentRef.current?.offsetHeight > 16 * minHeight),
       0,
     );
   }, [minHeight]);

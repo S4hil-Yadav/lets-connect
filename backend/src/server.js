@@ -9,7 +9,6 @@ import followRoute from "./routes/follow.route.js";
 import commentRoute from "./routes/comment.route.js";
 import notificationRoute from "./routes/notification.route.js";
 import { connectDB } from "./lib/db.js";
-import errorHandler from "./lib/error.js";
 
 const app = express();
 const PORT = process.env.PORT || 2000;

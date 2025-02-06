@@ -11,7 +11,7 @@ import BigCarousel from "./BigCarousel";
 
 export default function PostBody({ post }) {
   const imgDialogRef = useRef(null);
-  const [imgIdx, setImgIdx] = useState(0);
+  const [fileidx, setFileIdx] = useState(0);
 
   return (
     <div className="flex w-full flex-col">
@@ -21,35 +21,44 @@ export default function PostBody({ post }) {
       </div>
       <BigCarousel
         dialogRef={imgDialogRef}
-        images={post.images}
-        imgIdx={imgIdx}
-        setImgIdx={setImgIdx}
+        files={post.media}
+        fileIdx={fileidx}
+        setFileIdx={setFileIdx}
       />
 
       <Carousel className="flex w-full justify-center">
         <CarouselContent>
-          {post.video ? (
-            <video controls className="max-h-96">
-              <source src={post.video} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          ) : (
-            post.images.map((image, i) => (
-              <CarouselItem key={i}>
+          {post.media.map((file, i) => (
+            <CarouselItem key={i} className="flex items-center justify-center">
+              {file.media.type === "image" ? (
                 <img
-                  src={image}
+                  src={file.url}
                   loading="lazy"
                   onClick={() => {
-                    setImgIdx(i);
+                    setFileIdx(i);
                     imgDialogRef.current.showModal();
                   }}
-                  className="mx-auto aspect-square h-60 w-full select-none border-2 border-gray-200 object-cover md:aspect-[4/3]"
+                  className="mx-auto aspect-[3/4] max-h-60 w-full select-none rounded-lg border-2 border-gray-200 object-cover md:aspect-[4/3]"
                 />
-              </CarouselItem>
-            ))
-          )}
+              ) : file.media.type === "video" ? (
+                <video
+                  controls
+                  poster={file.media.thumbnail}
+                  preload="none"
+                  onClick={(e) => {
+                    e.target.requestFullscreen();
+                    e.target.play();
+                  }}
+                  className="max-h-60"
+                >
+                  <source src={file.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              ) : null}
+            </CarouselItem>
+          ))}
         </CarouselContent>
-        {post.images.length > 1 && (
+        {post.media.length > 1 && (
           <>
             <CarouselPrevious className="absolute left-3 border-black hover:bg-gray-300" />
             <CarouselNext className="absolute right-3 border-black hover:bg-gray-300" />

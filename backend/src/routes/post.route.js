@@ -24,7 +24,7 @@ import {
 
 const router = express.Router();
 
-router.post("/create-post", protectRoute, upload.single("video"), createPost);
+router.post("/create-post", protectRoute, upload.array("files"), createPost);
 router.get("/search-posts", SearchPosts);
 router.get("/get-all-posts", getAllPosts);
 router.get("/:postId/get-post", getPost);

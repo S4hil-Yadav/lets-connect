@@ -48,8 +48,8 @@ export default function FollowingDialog({ userId }) {
           Couldn&apos;t load followings
           <MdErrorOutline size={25} />
         </span>
-      ) : followings?.length ? (
-        userId !== authUser?._id ? (
+      ) : !followings?.length ? (
+        userId === authUser?._id ? (
           "You don't follow anyone"
         ) : (
           "This user doesn't follow anyone"

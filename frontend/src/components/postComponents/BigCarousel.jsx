@@ -2,9 +2,12 @@ import { useEffect, useRef } from "react";
 import { GrNext } from "react-icons/gr";
 import { RxCross2 } from "react-icons/rx";
 
-export default function BigCarousel({ dialogRef, images, imgIdx, setImgIdx }) {
+export default function BigCarousel({ dialogRef, files, fileIdx, setFileIdx }) {
   const leftButtonRef = useRef(null),
-    rightButtonRef = useRef(null);
+    rightButtonRef = useRef(null),
+    videoRef = useRef(null);
+
+  videoRef.current?.load();
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -15,39 +18,57 @@ export default function BigCarousel({ dialogRef, images, imgIdx, setImgIdx }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  function type() {
+    if (files[fileIdx]?.media.type.startsWith("image")) return "image";
+    if (files[fileIdx]?.media.type.startsWith("video")) return "video";
+    return "";
+  }
+
   return (
     <dialog
       ref={dialogRef}
       className="max-w-[100vw] bg-transparent outline-none"
     >
       <div className="flex max-w-fit items-center justify-center bg-black bg-opacity-50">
-        {images.length > 1 && (
+        {files.length > 1 && (
           <button
             ref={leftButtonRef}
             onClick={() =>
-              setImgIdx((prev) => (prev ? prev - 1 : images.length - 1))
+              setFileIdx((prev) => (prev ? prev - 1 : files.length - 1))
             }
             className="flex w-[7vw] rotate-180 cursor-pointer justify-center text-white"
           >
             <GrNext size={52} />
           </button>
         )}
-        <div className="relative">
+        <div className="relative flex items-center justify-center">
           <RxCross2
+            size={30}
             onClick={() => dialogRef.current.close()}
             className="absolute right-2 top-2 z-10 size-5 cursor-pointer rounded-full border border-white bg-black bg-opacity-50 p-1 text-white md:size-7"
           />
-          <img src={images[imgIdx]} className="max-h-[90vh] max-w-[80vw]" />
-          {images.length > 1 && (
+          {type(files[fileIdx]) === "image" ? (
+            <img src={files[fileIdx].url} />
+          ) : type(files[fileIdx]) === "video" ? (
+            <video
+              controls
+              ref={videoRef}
+              className="aspect-video max-h-screen w-[81vw]"
+            >
+              <source src={files[fileIdx].url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : null}
+          {files.length > 1 && (
             <span className="absolute bottom-0 left-[50%] mb-2 -translate-x-1/2 select-none rounded-lg border border-white bg-black px-2 py-1 text-white opacity-75">
-              {imgIdx + 1} / {images.length}
+              {fileIdx + 1} / {files.length}
             </span>
           )}
         </div>
-        {images.length > 1 && (
+        {files.length > 1 && (
           <button
             ref={rightButtonRef}
-            onClick={() => setImgIdx((prev) => (prev + 1) % images.length)}
+            onClick={() => setFileIdx((prev) => (prev + 1) % files.length)}
             className="flex w-[7vw] cursor-pointer justify-center text-white"
           >
             <GrNext size={52} />

@@ -3,14 +3,14 @@ import { createSlice } from "@reduxjs/toolkit";
 const draftSlice = createSlice({
   name: "draft",
   initialState: {
-    draft: { title: "", body: "", images: [] },
+    draft: { title: "", body: "" },
     posting: false,
   },
   reducers: {
     setDraft: (state, action) => ({ ...state, draft: action.payload }),
 
     clearDraft: () => ({
-      draft: { title: "", body: "", images: [] },
+      draft: { title: "", body: "" },
       posting: false,
     }),
 

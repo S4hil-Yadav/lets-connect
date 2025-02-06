@@ -3,40 +3,46 @@ import { FiMinusCircle } from "react-icons/fi";
 import { ImSpinner2 } from "react-icons/im";
 import { useCreatePostMutation } from "@/lib/mutations/post.mutations";
 import { useDispatch, useSelector } from "react-redux";
-import { setDraft, clearDraft, setPosting } from "@/redux/draft/draftSlice";
+import {
+  setDraft,
+  clearDraft,
+  setPosting,
+  clearPosting,
+} from "@/redux/draft/draftSlice";
 import BigCarousel from "@/components/postComponents/BigCarousel";
 import { useRef, useState } from "react";
-import {
-  MdOutlineAddPhotoAlternate,
-  MdOutlineVideoLibrary,
-} from "react-icons/md";
+import { MdOutlineVideoLibrary } from "react-icons/md";
 
 export default function CreatePostPage() {
   const dispatch = useDispatch(),
     { draft, posting } = useSelector((state) => state.draft);
 
-  const imgDialogRef = useRef(null);
+  const dialogRef = useRef(null);
 
-  const [imgIdx, setImgIdx] = useState(0),
-    [video, setVideo] = useState(null);
+  const [fileIdx, setFileIdx] = useState(0),
+    [files, setFiles] = useState([]);
 
   const { mutateAsync: createPost } = useCreatePostMutation();
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      if (!draft.body.trim() && !draft.images.length && !video)
+      if (!draft.title.trim() && !draft.body.trim() && !files.length)
         throw new Error("Post can't be empty");
 
-      dispatch(setPosting());
       const formData = new FormData();
       formData.append("post", JSON.stringify(draft));
-      formData.append("video", video);
+      files.forEach((file) => formData.append("files", file.media));
+
+      dispatch(setPosting());
+
       await createPost(formData);
+
+      dispatch(clearDraft());
+      setFiles([]);
     } catch (error) {
       toast.error(error.message);
-    } finally {
-      dispatch(clearDraft());
+      dispatch(clearPosting());
     }
   }
 
@@ -50,10 +56,10 @@ export default function CreatePostPage() {
         <BodyInput draft={draft} disabled={posting} />
         <MediaInput
           draft={draft}
-          setImgIdx={setImgIdx}
-          imgDialogRef={imgDialogRef}
-          video={video}
-          setVideo={setVideo}
+          setFileIdx={setFileIdx}
+          dialogRef={dialogRef}
+          files={files}
+          setFiles={setFiles}
           disabled={posting}
         />
         <button
@@ -66,10 +72,10 @@ export default function CreatePostPage() {
         </button>
       </form>
       <BigCarousel
-        dialogRef={imgDialogRef}
-        images={draft.images}
-        imgIdx={imgIdx}
-        setImgIdx={setImgIdx}
+        dialogRef={dialogRef}
+        files={files}
+        fileIdx={fileIdx}
+        setFileIdx={setFileIdx}
       />
     </div>
   );
@@ -122,117 +128,82 @@ function BodyInput({ draft, disabled }) {
   );
 }
 
-function MediaInput({
-  draft,
-  disabled,
-  setImgIdx,
-  imgDialogRef,
-  video,
-  setVideo,
-}) {
-  const dispatch = useDispatch();
+function MediaInput({ disabled, setFileIdx, dialogRef, files, setFiles }) {
+  const videoRefs = useRef([]);
 
-  async function handleImageUpload(e) {
-    const image = e.target.files[0];
-    if (!image) return;
+  async function handleMediaInput(e) {
+    const inputFiles = e.target.files;
+    if (!inputFiles) return;
 
-    const reader = new FileReader();
-
-    reader.readAsDataURL(image);
-
-    reader.onload = () =>
-      dispatch(
-        setDraft({ ...draft, images: [...draft.images, reader.result] }),
-      );
+    for (const file of inputFiles)
+      setFiles((files) => [
+        ...files,
+        { media: file, url: URL.createObjectURL(file) },
+      ]);
 
     e.target.value = [];
   }
 
   return (
     <div className="flex flex-wrap gap-3">
-      {draft.images.map((image, i) => (
+      {files.map((file, i) => (
         <div
           key={i}
-          className="relative flex size-20 items-center rounded-lg border-2 border-gray-300 p-1 shadow-lg"
+          className="relative flex size-20 items-center justify-center overflow-clip rounded-lg border-2 border-gray-300 shadow-lg"
         >
-          <img
-            src={image}
+          <div
             onClick={() => {
-              setImgIdx(i);
-              imgDialogRef.current.showModal();
+              setFileIdx(i);
+              dialogRef.current.showModal();
             }}
-            className="aspect-square rounded-md border object-cover shadow-lg"
-          />
-          <FiMinusCircle
-            onClick={() =>
-              dispatch(
-                setDraft({
-                  ...draft,
-                  images: draft.images.filter((_img, idx) => idx !== i),
-                }),
-              )
-            }
-            className="absolute right-0 top-0 size-5 cursor-pointer rounded-full text-red-500"
-          />
+            className="relative flex size-[4.5rem] overflow-clip rounded-lg"
+          >
+            {file.media.type.startsWith("image/") ? (
+              <img
+                src={file.url}
+                className="aspect-square rounded-md border object-cover shadow-lg"
+              />
+            ) : file.media.type.startsWith("video/") ? (
+              <video
+                ref={(el) => (videoRefs.current[i] = el)}
+                className="m-auto rounded-lg"
+              >
+                <source key={i} src={file.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : null}
+          </div>
+          {!disabled && (
+            <FiMinusCircle
+              size={20}
+              onClick={() => {
+                URL.revokeObjectURL(file.url);
+                setFiles((files) => files.filter((_video, idx) => i !== idx));
+                videoRefs.current?.forEach((ref) => ref.current?.load());
+              }}
+              className="absolute right-0 top-0 cursor-pointer rounded-full text-red-600 hover:text-red-500"
+            />
+          )}
         </div>
       ))}
-      {video && (
-        <div className="relative mx-auto">
-          <video controls className="max-h-60">
-            <source src={URL.createObjectURL(video)} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          <FiMinusCircle
-            size={30}
-            onClick={() => setVideo(null)}
-            className="absolute right-0 top-0 cursor-pointer rounded-full text-red-600 hover:text-red-500"
-          />
-        </div>
-      )}
-      <label
-        className={`h-fit cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200 ${video && "hidden"}`}
-      >
+      <label className="h-fit cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200">
         <div className="flex size-20 flex-col items-center justify-center gap-1">
-          <MdOutlineAddPhotoAlternate size={20} />
+          <MdOutlineVideoLibrary size={20} />
           <span className="mt-1 cursor-pointer text-center text-xs font-semibold leading-none">
-            add an
+            add
             <br />
-            image
+            media
           </span>
         </div>
         <input
           type="file"
-          accept="image/*"
-          onInput={handleImageUpload}
+          multiple
+          accept="image/*,video/*"
+          onInput={handleMediaInput}
           disabled={disabled}
           hidden
         />
       </label>
-      {!video && !draft.images.length && (
-        <>
-          <div className="flex h-20 items-center">or</div>
-          <label className="h-fit cursor-pointer rounded-md border-2 border-gray-400 bg-gray-200">
-            <div className="flex size-20 flex-col items-center justify-center gap-1">
-              <MdOutlineVideoLibrary size={20} />
-              <span className="mt-1 cursor-pointer text-center text-xs font-semibold leading-none">
-                add a
-                <br />
-                video
-              </span>
-            </div>
-            <input
-              type="file"
-              accept="video/*"
-              onInput={(e) => {
-                setVideo(e.target.files[0]);
-                e.target.value = [];
-              }}
-              disabled={disabled}
-              hidden
-            />
-          </label>
-        </>
-      )}
     </div>
   );
 }

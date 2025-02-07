@@ -28,8 +28,11 @@ export default function PostBody({ post }) {
 
     videoRefs.current.forEach((videoRef) => observer.observe(videoRef));
 
+    const videoRefsCopy = videoRefs;
     return () =>
-      videoRefs.current.forEach((videoRef) => observer.unobserve(videoRef));
+      videoRefsCopy.current?.forEach(
+        (videoRef) => videoRef && observer.unobserve(videoRef),
+      );
   }, []);
 
   return (

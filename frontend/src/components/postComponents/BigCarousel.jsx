@@ -15,18 +15,11 @@ export default function BigCarousel({
     rightButtonRef = useRef(null);
 
   useEffect(() => {
-    // const dialogRefCopy = dialogRef;
     const handleKeyDown = (event) => {
       if (event.code === "ArrowLeft") leftButtonRef.current?.click();
       if (event.code === "ArrowRight") rightButtonRef.current?.click();
     };
-    // window.addEventListener("keydown", handleKeyDown);
-    // dialogRef.current.addEventListener("close", () => {
-    //   videoRefs.current?.forEach((video) => video.pause());
-    // });
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [dialogRef, videoRefs]);
 
   function type() {
@@ -38,7 +31,6 @@ export default function BigCarousel({
   return (
     <dialog
       ref={dialogRef}
-      // onEx
       className="max-w-[100vw] bg-transparent outline-none"
     >
       <div className="flex max-w-fit items-center justify-center bg-black bg-opacity-50">

@@ -97,8 +97,6 @@ export async function getPost(req, res, next) {
           .match(/src=['"]([^'"]+)['"]/)[1])
     );
 
-    console.error(post.media);
-
     const { _id, deleted, createdAt, publisher } = post;
     return res.status(200).json(post.deleted ? { _id, deleted, createdAt, publisher } : post);
   } catch (error) {

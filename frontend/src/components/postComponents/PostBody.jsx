@@ -6,12 +6,31 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import TextWithExpand from "../TextWithExpand";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BigCarousel from "./BigCarousel";
 
 export default function PostBody({ post }) {
+  const videoRefs = useRef([]);
   const imgDialogRef = useRef(null);
   const [fileidx, setFileIdx] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) =>
+          videoRefs.current.forEach(
+            (videoRef) => !entry.isIntersecting && videoRef.pause(),
+          ),
+        );
+      },
+      { threshold: 0.1 },
+    );
+
+    videoRefs.current.forEach((videoRef) => observer.observe(videoRef));
+
+    return () =>
+      videoRefs.current.forEach((videoRef) => observer.unobserve(videoRef));
+  }, []);
 
   return (
     <div className="flex w-full flex-col">
@@ -24,6 +43,8 @@ export default function PostBody({ post }) {
         files={post.media}
         fileIdx={fileidx}
         setFileIdx={setFileIdx}
+        videoRefs={videoRefs}
+        isPost={true}
       />
 
       <Carousel className="flex w-full justify-center">
@@ -42,6 +63,7 @@ export default function PostBody({ post }) {
                 />
               ) : file.media.type === "video" ? (
                 <video
+                  ref={(el) => (videoRefs.current[i] = el)}
                   controls
                   poster={file.media.thumbnail}
                   preload="none"

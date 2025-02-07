@@ -17,10 +17,7 @@ export default function CreatePostPage() {
   const dispatch = useDispatch(),
     { draft, posting } = useSelector((state) => state.draft);
 
-  const dialogRef = useRef(null);
-
-  const [fileIdx, setFileIdx] = useState(0),
-    [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]);
 
   const { mutateAsync: createPost } = useCreatePostMutation();
 
@@ -54,14 +51,7 @@ export default function CreatePostPage() {
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
         <TitleInput draft={draft} disabled={posting} />
         <BodyInput draft={draft} disabled={posting} />
-        <MediaInput
-          draft={draft}
-          setFileIdx={setFileIdx}
-          dialogRef={dialogRef}
-          files={files}
-          setFiles={setFiles}
-          disabled={posting}
-        />
+        <MediaInput disabled={posting} files={files} setFiles={setFiles} />
         <button
           className="flex items-center gap-2 self-center rounded-lg bg-violet-400 px-5 py-2 text-xl font-medium text-white shadow-md hover:bg-violet-300 disabled:bg-violet-300"
           type="submit"
@@ -71,12 +61,6 @@ export default function CreatePostPage() {
           {posting && <ImSpinner2 className="size-5 animate-spin" />}
         </button>
       </form>
-      <BigCarousel
-        dialogRef={dialogRef}
-        files={files}
-        fileIdx={fileIdx}
-        setFileIdx={setFileIdx}
-      />
     </div>
   );
 }
@@ -128,8 +112,10 @@ function BodyInput({ draft, disabled }) {
   );
 }
 
-function MediaInput({ disabled, setFileIdx, dialogRef, files, setFiles }) {
+function MediaInput({ disabled, files, setFiles }) {
   const videoRefs = useRef([]);
+  const dialogRef = useRef(null);
+  const [fileIdx, setFileIdx] = useState(0);
 
   async function handleMediaInput(e) {
     const inputFiles = e.target.files;
@@ -204,6 +190,13 @@ function MediaInput({ disabled, setFileIdx, dialogRef, files, setFiles }) {
           hidden
         />
       </label>
+      <BigCarousel
+        dialogRef={dialogRef}
+        files={files}
+        fileIdx={fileIdx}
+        setFileIdx={setFileIdx}
+        videoRefs={videoRefs}
+      />
     </div>
   );
 }

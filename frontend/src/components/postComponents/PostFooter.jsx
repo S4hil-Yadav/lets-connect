@@ -122,7 +122,7 @@ function CommentButton({ post }) {
   return (
     <Link
       to={"/post/" + post._id}
-      state={{ backgroundLocation: location }}
+      state={{ backgroundLocation: location, noScroll: true }}
       className="flex items-center justify-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1"
     >
       <AiOutlineComment size={20} />

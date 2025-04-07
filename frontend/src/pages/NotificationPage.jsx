@@ -114,6 +114,8 @@ function NotificationCard({ notification }) {
       ? "/profile/" + notification.sender?._id
       : null;
 
+  // console.log(notification.sender);
+
   return (
     <div
       className={`relative flex w-full max-w-3xl items-center justify-between rounded-md bg-white px-3 py-3 shadow-md hover:bg-gray-100 ${!notification.read && "border-2 border-red-300"}`}
@@ -131,8 +133,8 @@ function NotificationCard({ notification }) {
         />
         <Link to={"/profile/" + notification.sender?._id}>
           <Avatar
-            src={notification.sender.profilePic}
-            name={notification.sender.fullname}
+            src={notification.sender?.profilePic}
+            name={notification.sender?.fullname}
             size="50"
             round={true}
           />
@@ -142,7 +144,7 @@ function NotificationCard({ notification }) {
             to={"/profile/" + notification.sender?._id}
             className="w-fit font-bold"
           >
-            {notification.sender.fullname}
+            {notification.sender?.fullname || "[deleted user]"}
           </Link>
           <span className="text-wrap break-words text-sm">
             {msg[0]}

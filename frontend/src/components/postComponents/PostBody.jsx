@@ -8,6 +8,7 @@ import {
 import TextWithExpand from "../TextWithExpand";
 import { useEffect, useRef, useState } from "react";
 import BigCarousel from "./BigCarousel";
+// import ReactPlayer from "react-player/lazy";
 
 export default function PostBody({ post }) {
   const videoRefs = useRef([]);
@@ -19,7 +20,7 @@ export default function PostBody({ post }) {
       (entries) => {
         entries.forEach((entry) =>
           videoRefs.current.forEach(
-            (videoRef) => !entry.isIntersecting && videoRef.pause(),
+            (videoRef) => !entry.isIntersecting && videoRef?.pause(),
           ),
         );
       },
@@ -65,6 +66,15 @@ export default function PostBody({ post }) {
                   className="mx-auto aspect-[3/4] max-h-60 w-full select-none rounded-lg border-2 border-gray-200 object-cover md:aspect-[4/3]"
                 />
               ) : file.media.type === "video" ? (
+                // <ReactPlayer
+                // ref={(el) => (videoRefs.current[i] = el)}
+                //   controls
+                //   url={file.url}
+                //   onClick={(e) => {
+                //     e.target.requestFullscreen();
+                //     e.target.play();
+                //   }}
+                // />
                 <video
                   ref={(el) => (videoRefs.current[i] = el)}
                   controls
@@ -74,10 +84,9 @@ export default function PostBody({ post }) {
                     e.target.requestFullscreen();
                     e.target.play();
                   }}
-                  className="max-h-60"
+                  className="max-h-96"
                 >
                   <source src={file.url} type="video/mp4" />
-                  Your browser does not support the video tag.
                 </video>
               ) : null}
             </CarouselItem>

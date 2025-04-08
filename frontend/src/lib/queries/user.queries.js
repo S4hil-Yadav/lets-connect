@@ -67,7 +67,7 @@ export function useGetFollowingRequestMapQuery() {
         .then((res) => res.data),
     select: (data) =>
       data.reduce((map, req) => {
-        map[req.receiver._id] = req._id;
+        map[req.receiver?._id] = req._id;
         return map;
       }, {}),
     retry: (count, error) => count < 3 && error.response?.status === 500,

@@ -49,7 +49,6 @@ export async function getFollowers(req, res, next) {
       .select("followers");
 
     if (!user) return next(errorHandler(404, "User not found"));
-
     return res.status(200).json(user.followers);
   } catch (error) {
     console.error("Error in getFollowers controler : ", error.message);

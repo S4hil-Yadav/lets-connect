@@ -290,20 +290,6 @@ export default function ProfilePage() {
         </div>
       </div>
       <Posts isLoading={isLoading} isError={isError} posts={user?.posts} />
-      {/* {isLoading ? (
-        <ImSpinner2 className="mt-5 size-7 w-full animate-spin text-violet-700" />
-      ) : isError ? (
-        "Error in loading user"
-      ) : (
-        <ul className="flex min-h-screen w-full flex-col items-center gap-5 px-0 py-10 md:px-10">
-          <h1 className="text-center text-4xl font-bold text-gray-700">
-            Posts
-          </h1>
-          {user.posts.length
-            ? user.posts.map((postId) => <Post key={postId} postId={postId} />)
-            : "This user has no posts"}
-        </ul>
-      )} */}
     </div>
   );
 }
